@@ -38,6 +38,7 @@ def inicializar_banco():
             id_usuario INTEGER NOT NULL,
             data_emprestimo TEXT NOT NULL,
             data_devolucao TEXT,
+            data_prevista TEXT,
             FOREIGN KEY (id_livro) REFERENCES livros(id),
             FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
         )
