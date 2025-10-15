@@ -115,8 +115,8 @@ if __name__ == '__main__':
    # insert_book("B", "Miguel", "Editora Y", 1600, "123345")
    #  insert_user("Joao", "2º Ano", "Rua bb bbb, 105", "joao@exemplo.br", "189919999")
    # insert_loan(2, 2, "15-10-2025", "25-10-2025")
+
     # Exibir dados cadastrados
-    
     listar_livros()
     listar_usuarios()
     listar_emprestimos()
