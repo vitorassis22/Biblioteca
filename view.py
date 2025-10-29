@@ -103,7 +103,6 @@ def listar_emprestimos():
     print("\n=== EMPRÉSTIMOS ===")
     for r in rows:
         id_emp, titulo, usuario, data_emp, data_prev, data_dev = r
-        # Normalize strings
         data_prev_clean = data_prev.strip() if isinstance(data_prev, str) else None
         status = "Data inválida"
         dias_atraso = None
