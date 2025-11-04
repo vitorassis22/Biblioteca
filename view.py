@@ -86,7 +86,7 @@ def listar_usuarios():
             print(f"ID: {usuario[0]} | Nome: {usuario[1]} | Turma: {usuario[2]} | Endereço: {usuario[3]} | Email: {usuario[4]} | Telefone: {usuario[5]}")
     else:
         print("Nenhum usuário cadastrado ainda.")
-        
+    return usuarios
 #Listar emprestimos
 def listar_emprestimos():
     con = connect()

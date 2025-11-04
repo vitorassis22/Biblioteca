@@ -2,9 +2,11 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter.constants import FALSE 
+from tkinter import messagebox
 # Importar pillow
 from PIL import Image, ImageTk
-
+# Importar as funcoes da view
+from view import *
 # --- cores ---
 co0 = "black" # Preto
 co1 = "white"   # Branco
@@ -18,38 +20,31 @@ co8 = "burlywood2" # + Verde
 co9 = "#2bb937" # + Verde
 co10 = "#0f7be7"
 co11 = "white"
-
 # --- Criando janela ---
 janela = tk.Tk() # Usando tk.Tk()
 janela.title("") # Titulo
-janela.geometry('1080x720') # Tamanho
+janela.geometry('720x480') # Tamanho
 janela.configure(background=co1) # Cor de fundo
 janela.resizable(width=FALSE, height=FALSE) # Nao ajustavel
-
 style = ttk.Style(janela) # Usando ttk.Style()
 style.theme_use("clam")
-
 # ----- CONFIGURANDO O GRID DA JANELA -----
 # Diz à janela que a COLUNA 1 (a da direita/conteúdo) deve se expandir
 janela.grid_columnconfigure(1, weight=1) 
 # Diz à janela que a LINHA 1 (abaixo do header) deve se expandir
 janela.grid_rowconfigure(1, weight=1)
-
 # ----- FRAMES -----
 # Frame de Cima (Header)
 # Está na linha 0 e ocupa as colunas 0 e 1 (columnspan=2)
 frameCima = tk.Frame(janela, height=50, bg=co11, relief="flat")
 frameCima.grid(row=0, column=0, columnspan=2, sticky="ew")
-
 # Frame da Esquerda (Sidebar)
 # 1. Colocado na column=0
-frameEsquerda = tk.Frame(janela, width=1000, bg=co8, relief="flat")
+frameEsquerda = tk.Frame(janela, bg=co8, relief="flat")
 frameEsquerda.grid(row=1, column=0, sticky="nsew") # "ns" = esticar Norte-Sul (vertical)
-
 # ---- FRAME DA DIREITA PARA CONTEÚDO ----
-#frameDireita = tk.Frame(janela, bg=co2, relief="flat")
-#frameDireita.grid(row=1, column=1, sticky="nsew") # "nsew" = esticar em todas as direções
-
+frameDireita = tk.Frame(janela, bg=co2, relief="flat")
+frameDireita.grid(row=1, column=1, sticky="nsew") # "nsew" = esticar em todas as direções
 # -------- LOGO --------
 # 1. Carrega com Pillow (Image.open)
 img = Image.open("icons8-book-100.png")
@@ -73,16 +68,264 @@ app_logo.image = app_img
 # 5. Coloca o label na tela (dentro do frameCima)
 # fill=tk.Y para o label preencher a altura do frame
 app_logo.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
-
 app_linha = tk.Label(frameCima, width=1080, height=1, padx=5, anchor=tk.NW, font=('Verdana 1'), bg=co3, fg=co1) # linha abaixo do texto
 app_linha.place(x=0, y=50)
+# Inserir novo cadastro
+# Inserir novo cadastro
+# Inserir novo cadastro
+def Novo_cadastro(): 
+    
+    # --- FUNÇÃO INTERNA 'add' ---
+    def add():
+        nome = ENome.get()
+        turma = ETurma.get()
+        telefone = ETel.get()
+        endereco = EEndereco.get()
+        email = EEmail.get()
 
+        # --- CORREÇÃO AQUI ---
+        # A lista de verificação agora só contém os campos obrigatórios
+        lista_obrigatoria = [nome, turma]
+        
+        # Verificando caso algum campo OBRIGATÓRIO esteja vazio
+        for i in lista_obrigatoria:
+            if i=='' or i=='Selecione a turma': # Adiciona verificação do Combobox
+                messagebox.showerror('Erro', 'Preencha todos os campos obrigatórios (*)')
+                return
+        
+        # Inserir os dados no banco (a função insert_user ainda recebe todos)
+        insert_user(nome, turma, endereco, email, telefone) 
+        
+        messagebox.showinfo('Sucesso', 'Usuário cadastrado com sucesso!')
+
+        # Limpando as entradas
+        ENome.delete(0,tk.END)
+        ETurma.set('Selecione a turma') # Limpa o combobox
+        ETel.delete(0,tk.END)
+        EEndereco.delete(0,tk.END)
+        EEmail.delete(0,tk.END)
+        
+    # --- CONFIGURAÇÃO DO GRID ---
+    frameDireita.grid_columnconfigure(0, weight=0) 
+    frameDireita.grid_columnconfigure(1, weight=1)
+    frameDireita.grid_columnconfigure(2, weight=0)
+    frameDireita.grid_columnconfigure(3, weight=1)
+    
+    # --- TÍTULO ---
+    app_ = tk.Label(frameDireita, text="Inserir novo cadastro", padx=5, pady=5, font=('Verdana 14'), bg=co2, fg=co0, anchor=tk.CENTER)
+    app_.grid(row=0, column=0, columnspan=4, sticky="ew")
+
+    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
+    app_linha.grid(row=1, column=0, columnspan=4, sticky=tk.EW)
+    
+    # --- NOME (Obrigatório) ---
+    # Adicionado '*' ao texto
+    LNome = tk.Label(frameDireita, text="Nome *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
+    LNome.grid(row=2, column=0, padx=5, pady=10, sticky="nsew")
+
+    ENome = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
+    ENome.grid(row=2, column=1, padx=5, pady=10, sticky=tk.NSEW)
+    
+    # --- TURMA (Obrigatório) ---
+    # Adicionado '*' ao texto
+    LTurma = tk.Label(frameDireita, text="Turma *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
+    LTurma.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
+
+    lista_turmas = ['Primeiro ano', 'Segundo ano', 'Terceiro ano']
+    ETurma = ttk.Combobox(frameDireita, width=23, values=lista_turmas, font=('Ivy 10'), state='readonly')
+    ETurma.grid(row=3, column=1, padx=5, pady=10, sticky=tk.NSEW)
+    ETurma.set('Selecione a turma') 
+    
+    # --- Telefone (Opcional) ---
+    LTel = tk.Label(frameDireita, text="Telefone", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
+    LTel.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
+
+    ETel = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
+    ETel.grid(row=4, column=1, padx=5, pady=10, sticky=tk.NSEW) 
+    
+    # --- Endereço (Opcional) ---
+    LEndereco = tk.Label(frameDireita, text="Endereço", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
+    LEndereco.grid(row=5, column=0, padx=5, pady=10, sticky="nsew")
+
+    EEndereco = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
+    EEndereco.grid(row=5, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
+
+    # --- Email (Opcional) ---
+    LEmail = tk.Label(frameDireita, text="Email", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
+    LEmail.grid(row=6, column=0, padx=5, pady=10, sticky="nsew")
+
+    EEmail = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
+    EEmail.grid(row=6, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
+    
+    # --- Botao salvar ---
+    try:
+        img_salvar = Image.open("save.png")
+        img_salvar = img_salvar.resize((18, 18))
+        img_salvar = ImageTk.PhotoImage(img_salvar)
+    except FileNotFoundError:
+        print("Aviso: 'save.png' não encontrado. Botão salvará sem imagem.")
+        img_salvar = None
+
+    b_salvar = tk.Button(frameDireita,
+                         command=add,      # Salvar no banco
+                         image=img_salvar,
+                         compound=tk.LEFT,
+                         anchor=tk.CENTER,
+                         text=' Salvar', 
+                         bg=co1,
+                         fg=co0,
+                         font=('Ivy 11'),
+                         overrelief="ridge",
+                         relief="groove")
+
+    b_salvar.grid(row=7, column=1, sticky="ew", padx=5, pady=20) 
+    
+    if img_salvar:
+        b_salvar.image = img_salvar
+    # --- Botao salvar ---
+    try:
+        img_salvar = Image.open("save.png")
+        img_salvar = img_salvar.resize((18, 18))
+        img_salvar = ImageTk.PhotoImage(img_salvar)
+    except FileNotFoundError:
+        print("Aviso: 'save.png' não encontrado. Botão salvará sem imagem.")
+        img_salvar = None # Define como None se não encontrar
+
+    b_salvar = tk.Button(frameDireita,
+                         command=add,      # Salvar no banco
+                         image=img_salvar,
+                         compound=tk.LEFT,
+                         anchor=tk.CENTER,
+                         text=' Salvar', # Adicionei um espaço
+                         bg=co1,
+                         fg=co0,
+                         font=('Ivy 11'),
+                         overrelief="ridge",
+                         relief="groove")
+
+    # Mudei a linha do botão de 6 para 7
+    b_salvar.grid(row=7, column=1, sticky="ew", padx=5, pady=20) # Aumentei pady
+    
+    if img_salvar:
+        b_salvar.image = img_salvar
+
+# Ver usuarios
+def ver_usuarios():
+    
+    app_ = tk.Label(frameDireita,text="Todos os usuários cadastrados",compound=tk.N, padx=5, pady=5, relief=tk.FLAT, anchor=tk.CENTER, font=('Verdana 12'),bg=co1, fg=co0)
+    app_.grid(row=0, column=0, columnspan=3, sticky=tk.EW)
+    l_linha = tk.Label(frameDireita, anchor=tk.NW, font=('Verdana 1 '), bg=co6, fg=co1)
+    l_linha.grid(row=1, column=0, columnspan=3, sticky=tk.NSEW)
+    dados = listar_usuarios()
+    # creating a treeview with dual scrollbars
+    list_header = ['id','nome','turma','endereço','email','telefone']
+    
+    global tree
+
+    tree = ttk.Treeview(frameDireita, selectmode="extended",
+                        columns=list_header, show="headings")
+    # vertical scrollbar
+    vsb = ttk.Scrollbar(frameDireita, orient="vertical", command=tree.yview)
+
+    # horizontal scrollbar
+    hsb = ttk.Scrollbar(frameDireita, orient="horizontal", command=tree.xview)
+
+    tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+
+    tree.grid(column=0, row=2, sticky='nsew')
+    vsb.grid(column=1, row=2, sticky='ns')
+    hsb.grid(column=0, row=3, sticky='ew')
+    frameDireita.grid_rowconfigure(0, weight=12)
+
+    hd=["nw","nw","nw","nw","nw","nw"]
+    h=[20,80,80,120,120,76,100]
+    n=0
+
+    for col in list_header:
+        tree.heading(col, text=col, anchor='nw')
+        #adjust the column's width to the header string
+        tree.column(col, width=h[n],anchor=hd[n])
+        
+        n+=1
+
+    for item in dados:
+        tree.insert('', 'end', values=item)
+
+def ver_usuarios():
+    
+    # --- Configuração das colunas do frameDireita para o Treeview ---
+    # É importante redefinir o grid_columnconfigure aqui para o layout do Treeview
+    # Coluna 0 (Treeview) deve expandir
+    frameDireita.grid_columnconfigure(0, weight=1) 
+    # Coluna 1 (Scrollbar vertical) não expande
+    frameDireita.grid_columnconfigure(1, weight=0) 
+    # Linha 2 (Treeview) deve expandir
+    frameDireita.grid_rowconfigure(2, weight=1) 
+
+    # --- TÍTULO (ajustado para ter o mesmo estilo) ---
+    app_ = tk.Label(frameDireita, text="Todos os usuários cadastrados", 
+                    padx=5, pady=10, 
+                    font=('Verdana 14'), # Usei o mesmo font size do "Inserir novo cadastro"
+                    bg=co2,              # <--- CORREÇÃO: Fundo verde para combinar com o frameDireita
+                    fg=co0, 
+                    anchor=tk.CENTER)    # <--- CORREÇÃO: Centraliza o texto
+    app_.grid(row=0, column=0, columnspan=2, sticky="ew") # columnspan 2 para ocupar a coluna do Treeview e da Scrollbar
+
+    # --- LINHA DIVISÓRIA ---
+    l_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Verdana 1 '), bg=co3, fg=co1)
+    l_linha.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW) # columnspan 2
+
+    # --- DADOS (agora com 'return') ---
+    dados = listar_usuarios()
+    
+    list_header = ['id','nome','turma','endereço','email','telefone']
+    
+    global tree
+
+    tree = ttk.Treeview(frameDireita, selectmode="extended", columns=list_header, show="headings")
+    vsb = ttk.Scrollbar(frameDireita, orient="vertical", command=tree.yview)
+    hsb = ttk.Scrollbar(frameDireita, orient="horizontal", command=tree.xview)
+
+    tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+
+    # --- POSICIONAMENTO DA TABELA E SCROLLBARS ---
+    tree.grid(column=0, row=2, sticky='nsew', padx=5, pady=5) # Adicionado padx/pady
+    vsb.grid(column=1, row=2, sticky='ns')
+    hsb.grid(column=0, row=3, columnspan=2, sticky='ew', padx=5) # Adicionado padx
+
+    # --- CONFIGURAÇÃO DAS COLUNAS DA TABELA ---
+    hd=["nw","nw","nw","nw","nw","nw"]
+    h=[20, 80, 80, 120, 120, 100] # Larguras das colunas
+    n=0
+
+    for col in list_header:
+        tree.heading(col, text=col.title(), anchor='nw') 
+        tree.column(col, width=h[n],anchor=hd[n])
+        n+=1
+
+    # --- POPULANDO A TABELA ---
+    if dados: 
+        for item in dados:
+            tree.insert('', 'end', values=item)
+            
+def control(i):
+    # novo usuario
+    if i == 'Novo cadastro':
+        for widget in frameDireita.winfo_children():
+            widget.destroy()
+        Novo_cadastro()
+     # novo usuario
+    if i == 'Consultar pessoas cadastradas':
+        for widget in frameDireita.winfo_children():
+            widget.destroy()
+        ver_usuarios()
+            
 # ------------ MENU ------------
 # NOVO USUARIO
 img_usuario = Image.open("plus.png")
 img_usuario = img_usuario.resize((18, 18))
 img_usuario = ImageTk.PhotoImage(img_usuario)
-b_usuario = tk.Button(frameEsquerda, image=img_usuario, compound=tk.LEFT, anchor=tk.NW, text='Novo cadastro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
+b_usuario = tk.Button(frameEsquerda, command=lambda:control('Novo cadastro'),image=img_usuario, compound=tk.LEFT, anchor=tk.NW, text='Novo cadastro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_usuario.grid(row=0, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # NOVO LIVRO
 img_livro = Image.open("plus.png")
@@ -100,7 +343,7 @@ b_ver.grid(row=2, column=0, sticky=tk.NSEW, padx=5, pady=6)
 img_verUser = Image.open("pessoa.png")
 img_verUser = img_verUser.resize((18, 18))
 img_verUser = ImageTk.PhotoImage(img_verUser)
-b_verUser = tk.Button(frameEsquerda, image=img_verUser, compound=tk.LEFT, anchor=tk.NW, text='Consultar pessoas cadastradas', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
+b_verUser = tk.Button(frameEsquerda, command=lambda:control('Consultar pessoas cadastradas'), image=img_verUser, compound=tk.LEFT, anchor=tk.NW, text='Consultar pessoas cadastradas', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_verUser.grid(row=3, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # VER EMPRESTIMOS
 img_verempresta = Image.open("consulta.png")
