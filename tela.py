@@ -59,16 +59,12 @@ app_logo.image = app_img
 app_logo.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
 app_linha = tk.Label(frameCima, width=1080, height=1, padx=5, anchor=tk.NW, font=('Verdana 1'), bg=co3, fg=co1)
 app_linha.place(x=0, y=50)
-<<<<<<< HEAD
 
 # ===================================================================
 # FUNÇÕES DAS TELAS
 # ===================================================================
 
 # --- Inserir novo cadastro (USUÁRIO) ---
-=======
-# Inserir novo cadastro
->>>>>>> 912a2242d9f18e687139e8b0a89fb04d9ff9106f
 def Novo_cadastro(): 
     
     def add():
@@ -145,7 +141,6 @@ def Novo_cadastro():
     if img_salvar:
         b_salvar.image = img_salvar
 
-<<<<<<< HEAD
 # --- (NOVO) Inserir novo LIVRO ---
 def Novo_livro():
     
@@ -172,48 +167,11 @@ def Novo_livro():
         EAno.delete(0,tk.END)
         EIsbn.delete(0,tk.END)
 
-=======
-# ------- Cadastrar livro ---------
-def Novo_livro(): 
-    
-    # --- FUNÇÃO INTERNA 'add' ---
-    def add():
-        titulo = Etitulo.get()
-        autor = Eautor.get()
-        editora = Eeditora.get()
-        ano_publicacao = Eano_publicacao.get()
-        isbn = Eisbn.get()
-
-        # --- CORREÇÃO AQUI ---
-        # A lista de verificação agora só contém os campos obrigatórios
-        lista_obrigatoria = [titulo, autor, editora, ano_publicacao, ibsn]
-        
-        # Verificando caso algum campo OBRIGATÓRIO esteja vazio
-        for i in lista_obrigatoria:
-            if i=='': # Adiciona verificação do Combobox
-                messagebox.showerror('Erro', 'Preencha todos os campos obrigatórios (*)')
-                return
-        
-        # Inserir os dados no banco (a função insert_user ainda recebe todos)
-        insert_book(titulo, autor, editora, ano_publicacao, ibsn) 
-        
-        messagebox.showinfo('Sucesso', 'Livro cadastrado com sucesso!')
-
-        # Limpando as entradas
-        Etitulo.delete(0,tk.END)
-        Eautor.delete(0,tk.END)
-        Eeditora.delete(0,tk.END)
-        Eano_publicacao.delete(0,tk.END)
-        Eisbn.delete(0,tk.END)
-        
-    # --- CONFIGURAÇÃO DO GRID ---
->>>>>>> 912a2242d9f18e687139e8b0a89fb04d9ff9106f
     frameDireita.grid_columnconfigure(0, weight=0) 
     frameDireita.grid_columnconfigure(1, weight=1)
     frameDireita.grid_columnconfigure(2, weight=0)
     frameDireita.grid_columnconfigure(3, weight=1)
     
-<<<<<<< HEAD
     app_ = tk.Label(frameDireita, text="Inserir novo livro", padx=5, pady=5, font=('Verdana 14'), bg=co2, fg=co0, anchor=tk.CENTER)
     app_.grid(row=0, column=0, columnspan=4, sticky="ew")
     app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
@@ -244,76 +202,6 @@ def Novo_livro():
     EIsbn = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
     EIsbn.grid(row=6, column=1, padx=5, pady=10, sticky=tk.NSEW)
     
-=======
-    # --- TÍTULO ---
-    app_ = tk.Label(frameDireita, text="Inserir novo livro", padx=5, pady=5, font=('Verdana 14'), bg=co2, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=4, sticky="ew")
-
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=4, sticky=tk.EW)
-    
-    # --- TITULO (Obrigatório) ---
-    Ltitulo = tk.Label(frameDireita, text="Título *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
-    Ltitulo.grid(row=2, column=0, padx=5, pady=10, sticky="nsew")
-
-    Etitulo = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    Etitulo.grid(row=2, column=1, padx=5, pady=10, sticky=tk.NSEW)
-    
-    # --- Autor (Obrigatório) ---
-    Lautor = tk.Label(frameDireita, text="Autor *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
-    Lautor.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
-
-    Eautor = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    Eautor.grid(row=3, column=1, padx=5, pady=10, sticky=tk.NSEW)
-
-    # --- Editora (Obrigatório) ---
-    Leditora = tk.Label(frameDireita, text="Editora *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
-    Leditora.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
-
-    Eeditora = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    Eeditora.grid(row=4, column=1, padx=5, pady=10, sticky=tk.NSEW) 
-    
-   # --- Ano de publicação (Obrigatório) ---
-    Lano_publicacao = tk.Label(frameDireita, text="Ano de publicação *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
-    Lano_publicacao.grid(row=5, column=0, padx=5, pady=10, sticky="nsew")
-
-    Eano_publicacao = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    Eano_publicacao.grid(row=5, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
-
-    # --- isbn (Obrigatório) ---
-    Lisbn = tk.Label(frameDireita, text="ISBN *", font=('Verdana 12'), bg=co2, fg=co0, anchor=tk.NW)
-    Lisbn.grid(row=6, column=0, padx=5, pady=10, sticky="nsew")
-
-    Eisbn = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    Eisbn.grid(row=6, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
-    
-    # --- Botao salvar ---
-    try:
-        img_salvar = Image.open("save.png")
-        img_salvar = img_salvar.resize((18, 18))
-        img_salvar = ImageTk.PhotoImage(img_salvar)
-    except FileNotFoundError:
-        print("Aviso: 'save.png' não encontrado. Botão salvará sem imagem.")
-        img_salvar = None
-
-    b_salvar = tk.Button(frameDireita,
-                         command=add,      # Salvar no banco
-                         image=img_salvar,
-                         compound=tk.LEFT,
-                         anchor=tk.CENTER,
-                         text=' Salvar', 
-                         bg=co1,
-                         fg=co0,
-                         font=('Ivy 11'),
-                         overrelief="ridge",
-                         relief="groove")
-
-    b_salvar.grid(row=7, column=1, sticky="ew", padx=5, pady=20) 
-    
-    if img_salvar:
-        b_salvar.image = img_salvar
-    # --- Botao salvar ---
->>>>>>> 912a2242d9f18e687139e8b0a89fb04d9ff9106f
     try:
         img_salvar = Image.open("save.png")
         img_salvar = img_salvar.resize((18, 18))
@@ -595,19 +483,12 @@ def control(i):
         ver_livros()
     elif i == 'Consultar pessoas cadastradas':
         ver_usuarios()
-<<<<<<< HEAD
     elif i == 'Consultar empréstimos':
         ver_emprestimos()
     elif i == 'Realizar empréstimo':
         realizar_emprestimo()
     elif i == 'Devolução':
         realizar_devolucao()
-=======
-    if i == 'Novo livro':
-        for widget in frameDireita.winfo_children():
-            widget.destroy()
-        Novo_livro() 
->>>>>>> 912a2242d9f18e687139e8b0a89fb04d9ff9106f
             
 # ===================================================================
 # MENU (Botões da Esquerda) - AGORA COM COMANDOS
@@ -623,21 +504,13 @@ b_usuario.grid(row=0, column=0, sticky=tk.NSEW, padx=5, pady=6)
 img_livro = Image.open("plus.png")
 img_livro = img_livro.resize((18, 18))
 img_livro = ImageTk.PhotoImage(img_livro)
-<<<<<<< HEAD
 b_livro = tk.Button(frameEsquerda, command=lambda:control('Novo Livro'), image=img_livro, compound=tk.LEFT, anchor=tk.NW, text='Novo Livro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-=======
-b_livro = tk.Button(frameEsquerda, command=lambda:control('Novo livro'), image=img_livro, compound=tk.LEFT, anchor=tk.NW, text='Novo livro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
->>>>>>> 912a2242d9f18e687139e8b0a89fb04d9ff9106f
 b_livro.grid(row=1, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # VER LIVROS
 img_ver = Image.open("icons8-book-100.png")
 img_ver = img_ver.resize((18, 18))
 img_ver = ImageTk.PhotoImage(img_ver)
-<<<<<<< HEAD
 b_ver = tk.Button(frameEsquerda, command=lambda:control('Consultar Livros'), image=img_ver, compound=tk.LEFT, anchor=tk.NW, text='Consultar Livros', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-=======
-b_ver = tk.Button(frameEsquerda, image=img_ver, compound=tk.LEFT, anchor=tk.NW, text='Consultar livros', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
->>>>>>> 912a2242d9f18e687139e8b0a89fb04d9ff9106f
 b_ver.grid(row=2, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # VER USUARIOS
 img_verUser = Image.open("pessoa.png")
