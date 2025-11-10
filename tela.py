@@ -41,7 +41,7 @@ frameEsquerda.grid(row=1, column=0, sticky="nsew") # "ns" = esticar Norte-Sul (v
 frameDireita = tk.Frame(janela, bg=co2, relief="flat")
 frameDireita.grid(row=1, column=1, sticky="nsew") # "nsew" = esticar em todas as direções
 # -------- LOGO --------
-img = Image.open("icons8-book-100.png")
+img = Image.open("D:/biblioteca/assets/icons8-book-100.png")
 img = img.resize((40, 40))
 app_img = ImageTk.PhotoImage(img)
 app_logo = tk.Label(
@@ -95,6 +95,16 @@ def Novo_cadastro():
     frameDireita.grid_columnconfigure(2, weight=0)
     frameDireita.grid_columnconfigure(3, weight=1)
     
+    # Reinicia os pesos das linhas para 0
+    frameDireita.grid_rowconfigure(0, weight=0) # Título
+    frameDireita.grid_rowconfigure(1, weight=0) # Linha
+    frameDireita.grid_rowconfigure(2, weight=0) # Nome
+    frameDireita.grid_rowconfigure(3, weight=0) # Turma
+    frameDireita.grid_rowconfigure(4, weight=0) # Telefone
+    frameDireita.grid_rowconfigure(5, weight=0) # Endereço
+    frameDireita.grid_rowconfigure(6, weight=0) # Email
+    frameDireita.grid_rowconfigure(7, weight=0) # Botão
+    
     app_ = tk.Label(frameDireita, text="Inserir novo cadastro", padx=5, pady=5, font=('Verdana 14'), bg=co2, fg=co0, anchor=tk.CENTER)
     app_.grid(row=0, column=0, columnspan=4, sticky="ew")
     app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
@@ -128,7 +138,7 @@ def Novo_cadastro():
     EEmail.grid(row=6, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
     
     try:
-        img_salvar = Image.open("save.png")
+        img_salvar = Image.open("D:/biblioteca/assets/save.png")
         img_salvar = img_salvar.resize((18, 18))
         img_salvar = ImageTk.PhotoImage(img_salvar)
     except FileNotFoundError:
@@ -172,6 +182,15 @@ def Novo_livro():
     frameDireita.grid_columnconfigure(2, weight=0)
     frameDireita.grid_columnconfigure(3, weight=1)
     
+    frameDireita.grid_rowconfigure(0, weight=0) # Título
+    frameDireita.grid_rowconfigure(1, weight=0) # Linha
+    frameDireita.grid_rowconfigure(2, weight=0) # Nome
+    frameDireita.grid_rowconfigure(3, weight=0) # Turma
+    frameDireita.grid_rowconfigure(4, weight=0) # Telefone
+    frameDireita.grid_rowconfigure(5, weight=0) # Endereço
+    frameDireita.grid_rowconfigure(6, weight=0) # Email
+    frameDireita.grid_rowconfigure(7, weight=0) # Botão
+    
     app_ = tk.Label(frameDireita, text="Inserir novo livro", padx=5, pady=5, font=('Verdana 14'), bg=co2, fg=co0, anchor=tk.CENTER)
     app_.grid(row=0, column=0, columnspan=4, sticky="ew")
     app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
@@ -203,7 +222,7 @@ def Novo_livro():
     EIsbn.grid(row=6, column=1, padx=5, pady=10, sticky=tk.NSEW)
     
     try:
-        img_salvar = Image.open("save.png")
+        img_salvar = Image.open("D:/biblioteca/assets/save.png")
         img_salvar = img_salvar.resize((18, 18))
         img_salvar = ImageTk.PhotoImage(img_salvar)
     except FileNotFoundError:
@@ -392,7 +411,7 @@ def realizar_emprestimo():
     EData.insert(0, datetime.now().strftime("%d-%m-%Y")) # <--- Preenche data de hoje
 
     try:
-        img_salvar = Image.open("save.png")
+        img_salvar = Image.open("D:/biblioteca/assets/save.png")
         img_salvar = img_salvar.resize((18, 18))
         img_salvar = ImageTk.PhotoImage(img_salvar)
     except FileNotFoundError:
@@ -454,7 +473,7 @@ def realizar_devolucao():
     EData.insert(0, datetime.now().strftime("%d-%m-%Y")) # <--- Preenche data de hoje
 
     try:
-        img_salvar = Image.open("save.png")
+        img_salvar = Image.open("D:/biblioteca/assets/save.png")
         img_salvar = img_salvar.resize((18, 18))
         img_salvar = ImageTk.PhotoImage(img_salvar)
     except FileNotFoundError:
@@ -495,43 +514,43 @@ def control(i):
 # ===================================================================
 
 # NOVO USUARIO
-img_usuario = Image.open("plus.png")
+img_usuario = Image.open("D:/biblioteca/assets/plus.png")
 img_usuario = img_usuario.resize((18, 18))
 img_usuario = ImageTk.PhotoImage(img_usuario)
 b_usuario = tk.Button(frameEsquerda, command=lambda:control('Novo cadastro'),image=img_usuario, compound=tk.LEFT, anchor=tk.NW, text='Novo cadastro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_usuario.grid(row=0, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # NOVO LIVRO
-img_livro = Image.open("plus.png")
+img_livro = Image.open("D:/biblioteca/assets/plus.png")
 img_livro = img_livro.resize((18, 18))
 img_livro = ImageTk.PhotoImage(img_livro)
 b_livro = tk.Button(frameEsquerda, command=lambda:control('Novo Livro'), image=img_livro, compound=tk.LEFT, anchor=tk.NW, text='Novo Livro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_livro.grid(row=1, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # VER LIVROS
-img_ver = Image.open("icons8-book-100.png")
+img_ver = Image.open("D:/biblioteca/assets/icons8-book-100.png")
 img_ver = img_ver.resize((18, 18))
 img_ver = ImageTk.PhotoImage(img_ver)
 b_ver = tk.Button(frameEsquerda, command=lambda:control('Consultar Livros'), image=img_ver, compound=tk.LEFT, anchor=tk.NW, text='Consultar Livros', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_ver.grid(row=2, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # VER USUARIOS
-img_verUser = Image.open("pessoa.png")
+img_verUser = Image.open("D:/biblioteca/assets/pessoa.png")
 img_verUser = img_verUser.resize((18, 18))
 img_verUser = ImageTk.PhotoImage(img_verUser)
 b_verUser = tk.Button(frameEsquerda, command=lambda:control('Consultar pessoas cadastradas'), image=img_verUser, compound=tk.LEFT, anchor=tk.NW, text='Consultar pessoas cadastradas', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_verUser.grid(row=3, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # VER EMPRESTIMOS
-img_verempresta = Image.open("consulta.png")
+img_verempresta = Image.open("D:/biblioteca/assets/consulta.png")
 img_verempresta = img_verempresta.resize((18, 18))
 img_verempresta = ImageTk.PhotoImage(img_verempresta)
 b_verempresta = tk.Button(frameEsquerda, command=lambda:control('Consultar empréstimos'), image=img_verempresta, compound=tk.LEFT, anchor=tk.NW, text='Consultar empréstimos', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_verempresta.grid(row=4, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # EMPRESTIMO
-img_empresta = Image.open("emprestar.png")
+img_empresta = Image.open("D:/biblioteca/assets/emprestar.png")
 img_empresta = img_empresta.resize((18, 18))
 img_empresta = ImageTk.PhotoImage(img_empresta)
 b_empresta = tk.Button(frameEsquerda, command=lambda:control('Realizar empréstimo'), image=img_empresta, compound=tk.LEFT, anchor=tk.NW, text='Realizar empréstimo', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
 b_empresta.grid(row=6, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # DEVOLUCAO
-img_devolve = Image.open("icons8-reload-100.png")
+img_devolve = Image.open("D:/biblioteca/assets/icons8-reload-100.png")
 img_devolve = img_devolve.resize((18, 18))
 img_devolve = ImageTk.PhotoImage(img_devolve)
 b_devolve = tk.Button(frameEsquerda, command=lambda:control('Devolução'), image=img_devolve, compound=tk.LEFT, anchor=tk.NW, text='Devolução', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
