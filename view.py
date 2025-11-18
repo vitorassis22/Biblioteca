@@ -161,5 +161,137 @@ def get_active_loans():
     rows = cur.fetchall()
     con.close()
     return [f"{id}: {titulo} (com {usuario})" for id, titulo, usuario in rows]
+#----- novo ------------
 
+# --- NOVAS FUNÇÕES DE ALTERAÇÃO E EXCLUSÃO ---
+
+# --- FUNÇÕES 'GET' PARA PREENCHER FORMULÁRIOS ---
+
+def get_user_by_id(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (id,))
+    data = cursor.fetchone() # fetchone() pega apenas um resultado
+    con.close()
+    return data
+
+def get_book_by_id(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM livros WHERE id = ?", (id,))
+    data = cursor.fetchone()
+    con.close()
+    return data
+
+# -- novo --
+
+# --- NOVAS FUNÇÕES DE ALTERAÇÃO E EXCLUSÃO ---
+
+# --- FUNÇÕES 'GET' PARA PREENCHER FORMULÁRIOS ---
+
+def get_user_by_id(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (id,))
+    data = cursor.fetchone() # fetchone() pega apenas um resultado
+    con.close()
+    return data
+
+def get_book_by_id(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM livros WHERE id = ?", (id,))
+    data = cursor.fetchone()
+    con.close()
+    return data
+
+# --- FUNÇÕES 'UPDATE' (ALTERAR) ---
+
+def update_user(id, nome, turma, endereco, email, telefone):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute(
+        """UPDATE usuarios SET nome=?, turma=?, endereco=?, email=?, telefone=?
+           WHERE id = ?""",
+        (nome, turma, endereco, email, telefone, id)
+    )
+    con.commit()
+    con.close()
+    print(f"Usuário ID {id} atualizado.")
+
+def update_book(id, titulo, autor, editora, ano, isbn):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute(
+        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?
+           WHERE id = ?""",
+        (titulo, autor, editora, ano, isbn, id)
+    )
+    con.commit()
+    con.close()
+    print(f"Livro ID {id} atualizado.")
+
+# --- FUNÇÕES 'DELETE' (EXCLUIR) ---
+
+def delete_user(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+    print(f"Usuário ID {id} deletado.")
+
+def delete_book(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM livros WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+    print(f"Livro ID {id} deletado.")
+    
+    #-- fim novo --
+
+# --- FUNÇÕES 'UPDATE' (ALTERAR) ---
+
+def update_user(id, nome, turma, endereco, email, telefone):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute(
+        """UPDATE usuarios SET nome=?, turma=?, endereco=?, email=?, telefone=?
+           WHERE id = ?""",
+        (nome, turma, endereco, email, telefone, id)
+    )
+    con.commit()
+    con.close()
+    print(f"Usuário ID {id} atualizado.")
+
+def update_book(id, titulo, autor, editora, ano, isbn):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute(
+        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?
+           WHERE id = ?""",
+        (titulo, autor, editora, ano, isbn, id)
+    )
+    con.commit()
+    con.close()
+    print(f"Livro ID {id} atualizado.")
+
+# --- FUNÇÕES 'DELETE' (EXCLUIR) ---
+
+def delete_user(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+    print(f"Usuário ID {id} deletado.")
+
+def delete_book(id):
+    con = connect()
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM livros WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+    print(f"Livro ID {id} deletado.")
 # (O resto do seu código de teste __main__ pode ficar aqui)
