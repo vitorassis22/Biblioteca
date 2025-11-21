@@ -1,28 +1,27 @@
-# Importar Tkinter
+# Importar Bibliotecas
 import sys
 import os
-import tkinter as tk
+import customtkinter as ctk 
 from tkinter import ttk
-from tkinter.constants import FALSE 
 from tkinter import messagebox
-from datetime import datetime # <--- IMPORTADO
+from datetime import datetime 
+from PIL import Image
+
+# --- Configuração do CustomTkinter ---
+ctk.set_appearance_mode("Light") 
+ctk.set_default_color_theme("green") 
+
+# Importar as funcoes da view (Banco de dados)
+from view import *
 
 def resource_path(relative_path):
-    """ Obtém o caminho absoluto para o recurso, funciona para dev e para o PyInstaller """
     try:
-        # PyInstaller cria um caminho temp e o armazena em _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        # _MEIPASS não existe, então estamos rodando no modo de dev
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
-# Importar pillow
-from PIL import Image, ImageTk
-# Importar as funcoes da view
-from view import *
-# --- cores ---
+# --- CORES ---
 co0 = "black" 
 co1 = "white"  
 co2 = "#4fa882" 
@@ -36,985 +35,529 @@ co9 = "#2bb937"
 co10 = "#0f7be7"
 co11 = "white"
 co12 = "#98fb98"
-# --- Criando janela ---
-janela = tk.Tk() # Usando tk.Tk()
-janela.title("") # Titulo
-janela.geometry('720x500') # Tamanho
-janela.configure(background=co1) # Cor de fundo
-janela.resizable(width=FALSE, height=FALSE) # Nao ajustavel
-style = ttk.Style(janela) # Usando ttk.Style()
-style.theme_use("clam")
+
+# --- Criando janela (TAMANHO REDUZIDO) ---
+janela = ctk.CTk() 
+janela.title("") 
+janela.geometry('800x600') # <--- REDUZIDO PARA 800x600
+janela.configure(fg_color=co1) 
+janela.resizable(width=False, height=False) 
+
 # ----- CONFIGURANDO O GRID DA JANELA -----
 janela.grid_columnconfigure(1, weight=1) 
 janela.grid_rowconfigure(1, weight=1)
+
 # ----- FRAMES -----
-frameCima = tk.Frame(janela, height=50, bg=co11, relief="flat")
+frameCima = ctk.CTkFrame(janela, height=50, fg_color=co11, corner_radius=0)
 frameCima.grid(row=0, column=0, columnspan=2, sticky="ew")
-frameEsquerda = tk.Frame(janela, bg=co8, relief="flat")
-frameEsquerda.grid(row=1, column=0, sticky="nsew") # "ns" = esticar Norte-Sul (vertical)
-frameDireita = tk.Frame(janela, bg=co12, relief="flat")
-frameDireita.grid(row=1, column=1, sticky="nsew") # "nsew" = esticar em todas as direções
-# -------- LOGO --------
-img = Image.open(resource_path("assets/icons8-book-100.png"))
-img = img.resize((40, 40))
-app_img = ImageTk.PhotoImage(img)
-app_logo = tk.Label(
+
+frameEsquerda = ctk.CTkFrame(janela, fg_color=co8, corner_radius=0)
+frameEsquerda.grid(row=1, column=0, sticky="nsew") 
+
+frameDireita = ctk.CTkFrame(janela, fg_color=co12, corner_radius=0)
+frameDireita.grid(row=1, column=1, sticky="nsew") 
+
+# -------- LOGO & IMAGENS --------
+def get_ctk_image(filename, size=(20, 20)):
+    try:
+        img_path = resource_path(f"assets/{filename}")
+        return ctk.CTkImage(light_image=Image.open(img_path), dark_image=Image.open(img_path), size=size)
+    except:
+        return None
+
+logo_img = get_ctk_image("icons8-book-100.png", size=(40, 40))
+app_logo = ctk.CTkLabel(
     frameCima,
-    text="Sistema de Gerenciamento para Biblioteca", 
-    image=app_img,
-    bg=co11,       
-    compound=tk.LEFT,             
-    padx=10,                      
-    anchor=tk.W,                  
-    font=('Verdana', 16, 'bold'), 
-    fg=co0                        
+    text=" Sistema de Gerenciamento para Biblioteca", 
+    image=logo_img,
+    compound="left",
+    font=('Verdana', 18, 'bold'), 
+    text_color=co0,
+    fg_color="transparent"
 )
-app_logo.image = app_img
-app_logo.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
-app_linha = tk.Label(frameCima, width=1080, height=1, padx=5, anchor=tk.NW, font=('Verdana 1'), bg=co3, fg=co1)
-app_linha.place(x=0, y=50)
+app_logo.pack(side="left", padx=10, pady=5)
+
+app_linha = ctk.CTkFrame(frameCima, width=800, height=2, fg_color=co3)
+app_linha.place(x=0, y=48)
+
+# ===================================================================
+# FUNÇÕES AUXILIARES
+# ===================================================================
+
+def limpar_frame_direita():
+    for widget in frameDireita.winfo_children():
+        widget.destroy()
+    for i in range(15): frameDireita.grid_rowconfigure(i, weight=0)
+    for i in range(5): frameDireita.grid_columnconfigure(i, weight=0)
 
 # ===================================================================
 # FUNÇÕES DAS TELAS
 # ===================================================================
 
-# --- Inserir novo cadastro (USUÁRIO) ---
+# --- Inserir novo cadastro ---
 def Novo_cadastro(): 
+    limpar_frame_direita()
     
     def add():
-        nome = ENome.get()
-        turma = ETurma.get()
-        telefone = ETel.get()
-        endereco = EEndereco.get()
-        email = EEmail.get()
-
+        nome = ENome.get(); turma = ETurma.get(); telefone = ETel.get()
+        endereco = EEndereco.get(); email = EEmail.get()
         lista_obrigatoria = [nome, turma]
-        
         for i in lista_obrigatoria:
             if i=='' or i=='Selecione a turma':
                 messagebox.showerror('Erro', 'Preencha todos os campos obrigatórios (*)')
                 return
-        
         insert_user(nome, turma, endereco, email, telefone) 
         messagebox.showinfo('Sucesso', 'Usuário cadastrado com sucesso!')
-
-        ENome.delete(0,tk.END)
+        ENome.delete(0, 'end'); ETel.delete(0, 'end'); EEndereco.delete(0, 'end'); EEmail.delete(0, 'end')
         ETurma.set('Selecione a turma')
-        ETel.delete(0,tk.END)
-        EEndereco.delete(0,tk.END)
-        EEmail.delete(0,tk.END)
-        
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
-    frameDireita.grid_columnconfigure(2, weight=0)
+
+    # Layout Centralizado
+    frameDireita.grid_columnconfigure(0, weight=1)
     frameDireita.grid_columnconfigure(3, weight=1)
-    
-    # Reinicia os pesos das linhas para 0
-    frameDireita.grid_rowconfigure(0, weight=0) # Título
-    frameDireita.grid_rowconfigure(1, weight=0) # Linha
-    frameDireita.grid_rowconfigure(2, weight=0) # Nome
-    frameDireita.grid_rowconfigure(3, weight=0) # Turma
-    frameDireita.grid_rowconfigure(4, weight=0) # Telefone
-    frameDireita.grid_rowconfigure(5, weight=0) # Endereço
-    frameDireita.grid_rowconfigure(6, weight=0) # Email
-    frameDireita.grid_rowconfigure(7, weight=0) # Botão
-    
-    app_ = tk.Label(frameDireita, text="Inserir novo cadastro", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=4, sticky="ew")
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=4, sticky=tk.EW)
-    
-    LNome = tk.Label(frameDireita, text="Nome *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LNome.grid(row=2, column=0, padx=5, pady=10, sticky="nsew")
-    ENome = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    ENome.grid(row=2, column=1, padx=5, pady=10, sticky=tk.NSEW)
-    
-    LTurma = tk.Label(frameDireita, text="Turma *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LTurma.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
-    lista_turmas = ['Primeiro ano', 'Segundo ano', 'Terceiro ano']
-    ETurma = ttk.Combobox(frameDireita, width=23, values=lista_turmas, font=('Ivy 10'), state='readonly')
-    ETurma.grid(row=3, column=1, padx=5, pady=10, sticky=tk.NSEW)
-    ETurma.set('Selecione a turma') 
-    
-    LTel = tk.Label(frameDireita, text="Telefone", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LTel.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
-    ETel = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    ETel.grid(row=4, column=1, padx=5, pady=10, sticky=tk.NSEW) 
-    
-    LEndereco = tk.Label(frameDireita, text="Endereço", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LEndereco.grid(row=5, column=0, padx=5, pady=10, sticky="nsew")
-    EEndereco = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EEndereco.grid(row=5, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
 
-    LEmail = tk.Label(frameDireita, text="Email", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LEmail.grid(row=6, column=0, padx=5, pady=10, sticky="nsew")
-    EEmail = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EEmail.grid(row=6, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
-    
-    try:
-        img_salvar = Image.open(resource_path("assets/save.png"))
-        img_salvar = img_salvar.resize((18, 18))
-        img_salvar = ImageTk.PhotoImage(img_salvar)
-    except FileNotFoundError:
-        img_salvar = None
+    ctk.CTkLabel(frameDireita, text="Inserir novo cadastro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=15)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
 
-    b_salvar = tk.Button(frameDireita, command=add, image=img_salvar, compound=tk.LEFT, anchor=tk.CENTER,
-                         text=' Salvar', bg=co1, fg=co0, font=('Ivy 11 bold'), overrelief="ridge", relief="groove")
-    b_salvar.grid(row=7, column=1, sticky="ew", padx=5, pady=20) 
+    ctk.CTkLabel(frameDireita, text="Nome *", font=('Verdana', 14), text_color=co0).grid(row=2, column=1, padx=10, pady=10, sticky="e")
+    ENome = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+    ENome.grid(row=2, column=2, padx=10, pady=10, sticky="w")
     
-    if img_salvar:
-        b_salvar.image = img_salvar
+    ctk.CTkLabel(frameDireita, text="Turma *", font=('Verdana', 14), text_color=co0).grid(row=3, column=1, padx=10, pady=10, sticky="e")
+    ETurma = ctk.CTkOptionMenu(frameDireita, width=250, values=['Sexto ano', 'Sétimo ano', 'Oitavo ano', 'Nono ano'], fg_color="white", text_color="black", state="readonly")
+    ETurma.grid(row=3, column=2, padx=10, pady=10, sticky="w"); ETurma.set('Selecione a turma') 
+    
+    ctk.CTkLabel(frameDireita, text="Telefone", font=('Verdana', 14), text_color=co0).grid(row=4, column=1, padx=10, pady=10, sticky="e")
+    ETel = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+    ETel.grid(row=4, column=2, padx=10, pady=10, sticky="w") 
+    
+    ctk.CTkLabel(frameDireita, text="Endereço", font=('Verdana', 14), text_color=co0).grid(row=5, column=1, padx=10, pady=10, sticky="e")
+    EEndereco = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+    EEndereco.grid(row=5, column=2, padx=10, pady=10, sticky="w")
 
-# --- (NOVO) Inserir novo LIVRO ---
+    ctk.CTkLabel(frameDireita, text="Email", font=('Verdana', 14), text_color=co0).grid(row=6, column=1, padx=10, pady=10, sticky="e")
+    EEmail = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+    EEmail.grid(row=6, column=2, padx=10, pady=10, sticky="w")
+    
+    img_save = get_ctk_image("save.png")
+    b_salvar = ctk.CTkButton(frameDireita, command=add, image=img_save, text='SALVAR', font=('Ivy', 14), 
+                             fg_color=co1, text_color=co0, hover_color=co1, border_width=1, border_color=co0)
+    b_salvar.grid(row=7, column=2, sticky="w", padx=10, pady=20)
+
+# --- Inserir novo LIVRO ---
 def Novo_livro():
+    limpar_frame_direita()
     
     def add_livro():
-        titulo = ETitulo.get()
-        autor = EAutor.get()
-        editora = EEditora.get()
-        ano = EAno.get()
-        isbn = EIsbn.get()
-
-        lista_obrigatoria = [titulo, autor, editora, ano, isbn]
-        
+        titulo = ETitulo.get(); autor = EAutor.get(); editora = EEditora.get()
+        ano = EAno.get(); isbn = EIsbn.get(); origem = Eorigem.get()
+        lista_obrigatoria = [titulo, autor, editora, ano, isbn, origem]
         for i in lista_obrigatoria:
-            if i=='':
+            if i=='' or i=='Selecione a origem':
                 messagebox.showerror('Erro', 'Preencha todos os campos obrigatórios (*)')
                 return
-        
-        insert_book(titulo, autor, editora, ano, isbn) 
+        insert_book(titulo, autor, editora, ano, isbn, origem) 
         messagebox.showinfo('Sucesso', 'Livro cadastrado com sucesso!')
+        ETitulo.delete(0,'end'); EAutor.delete(0,'end'); EEditora.delete(0,'end'); EAno.delete(0,'end'); EIsbn.delete(0,'end')
+        Eorigem.set('Selecione a origem')
 
-        ETitulo.delete(0,tk.END)
-        EAutor.delete(0,tk.END)
-        EEditora.delete(0,tk.END)
-        EAno.delete(0,tk.END)
-        EIsbn.delete(0,tk.END)
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
 
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
-    frameDireita.grid_columnconfigure(2, weight=0)
-    frameDireita.grid_columnconfigure(3, weight=1)
+    ctk.CTkLabel(frameDireita, text="Inserir novo livro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=15)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
     
-    frameDireita.grid_rowconfigure(0, weight=0) # Título
-    frameDireita.grid_rowconfigure(1, weight=0) # Linha
-    frameDireita.grid_rowconfigure(2, weight=0) # Nome
-    frameDireita.grid_rowconfigure(3, weight=0) # Turma
-    frameDireita.grid_rowconfigure(4, weight=0) # Telefone
-    frameDireita.grid_rowconfigure(5, weight=0) # Endereço
-    frameDireita.grid_rowconfigure(6, weight=0) # Email
-    frameDireita.grid_rowconfigure(7, weight=0) # Botão
-    
-    app_ = tk.Label(frameDireita, text="Inserir novo livro", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=4, sticky="ew")
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=4, sticky=tk.EW)
-    
-    LTitulo = tk.Label(frameDireita, text="Título *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LTitulo.grid(row=2, column=0, padx=5, pady=10, sticky="nsew")
-    ETitulo = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    ETitulo.grid(row=2, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
-    
-    LAutor = tk.Label(frameDireita, text="Autor *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LAutor.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
-    EAutor = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EAutor.grid(row=3, column=1, columnspan=3, padx=5, pady=10, sticky=tk.NSEW)
-    
-    LEditora = tk.Label(frameDireita, text="Editora *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LEditora.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
-    EEditora = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EEditora.grid(row=4, column=1, padx=5, pady=10, sticky=tk.NSEW) 
-    
-    LAno = tk.Label(frameDireita, text="Ano *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LAno.grid(row=5, column=0, padx=5, pady=10, sticky="nsew")
-    EAno = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EAno.grid(row=5, column=1, padx=5, pady=10, sticky=tk.NSEW)
+    campos = [("Título *", 2), ("Autor *", 3), ("Editora *", 4), ("Ano *", 5), ("ISBN *", 6)]
+    entries = {}
 
-    LIsbn = tk.Label(frameDireita, text="ISBN *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LIsbn.grid(row=6, column=0, padx=5, pady=10, sticky="nsew")
-    EIsbn = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EIsbn.grid(row=6, column=1, padx=5, pady=10, sticky=tk.NSEW)
+    for texto, linha in campos:
+        ctk.CTkLabel(frameDireita, text=texto, font=('Verdana', 14), text_color=co0).grid(row=linha, column=1, padx=10, pady=10, sticky="e")
+        entry = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+        entry.grid(row=linha, column=2, padx=10, pady=10, sticky="w")
+        entries[texto] = entry
     
-    try:
-        img_salvar = Image.open(resource_path("assets/save.png"))
-        img_salvar = img_salvar.resize((18, 18))
-        img_salvar = ImageTk.PhotoImage(img_salvar)
-    except FileNotFoundError:
-        img_salvar = None
+    ETitulo = entries["Título *"]; EAutor = entries["Autor *"]; EEditora = entries["Editora *"]; EAno = entries["Ano *"]; EIsbn = entries["ISBN *"]
+    
+    ctk.CTkLabel(frameDireita, text="Origem *", font=('Verdana', 14), text_color=co0).grid(row=7, column=1, padx=10, pady=10, sticky="e")
+    Eorigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo'], fg_color="white", text_color="black", state="readonly")
+    Eorigem.grid(row=7, column=2, padx=10, pady=10, sticky="w"); Eorigem.set('Selecione a origem') 
+    
+    img_save = get_ctk_image("save.png")
+    b_salvar = ctk.CTkButton(frameDireita, command=add_livro, image=img_save, text='SALVAR', font=('Ivy', 14), 
+                             fg_color=co1, text_color=co0, hover_color=co1, border_width=1, border_color=co0)
+    b_salvar.grid(row=8, column=2, sticky="w", padx=10, pady=20)
 
-    b_salvar = tk.Button(frameDireita, command=add_livro, image=img_salvar, compound=tk.LEFT, anchor=tk.CENTER,
-                         text=' Salvar', bg=co1, fg=co0, font=('Ivy 11 bold'), overrelief="ridge", relief="groove")
-    b_salvar.grid(row=7, column=1, sticky="ew", padx=5, pady=20) 
-    if img_salvar:
-        b_salvar.image = img_salvar
+# --- Tabela ---
+def criar_tabela(headers, columns_width):
+    style = ttk.Style()
+    style.theme_use("clam")
+    style.configure("Treeview", background=co11, fieldbackground=co11, foreground="black", rowheight=25, font=('Arial', 10))
+    style.configure("Treeview.Heading", background=co2, foreground="white", font=('Arial', 10, 'bold'))
+    style.map("Treeview", background=[('selected', co6)])
 
-# --- Ver usuarios (CONSULTAR PESSOAS) ---
+    tree = ttk.Treeview(frameDireita, selectmode="extended", columns=headers, show="headings")
+    vsb = ttk.Scrollbar(frameDireita, orient="vertical", command=tree.yview)
+    hsb = ttk.Scrollbar(frameDireita, orient="horizontal", command=tree.xview)
+    tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+
+    tree.grid(column=0, row=2, sticky='nsew', padx=10, pady=10)
+    vsb.grid(column=1, row=2, sticky='ns', pady=10)
+    hsb.grid(column=0, row=3, sticky='ew', padx=10)
+
+    for col, width in zip(headers, columns_width):
+        tree.heading(col, text=col.title(), anchor='nw')
+        tree.column(col, width=width, anchor='nw')
+    return tree
+
+# --- Ver usuarios ---
 def ver_usuarios():
-    
-    frameDireita.grid_columnconfigure(0, weight=1) 
-    frameDireita.grid_columnconfigure(1, weight=0) 
-    frameDireita.grid_rowconfigure(2, weight=1) 
+    limpar_frame_direita()
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_rowconfigure(2, weight=1)
 
-    app_ = tk.Label(frameDireita, text="Todos os usuários cadastrados", 
-                    padx=5, pady=10, 
-                    font=('Verdana 14'), 
-                    bg=co12,               
-                    fg=co0, 
-                    anchor=tk.CENTER)    
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew") 
+    ctk.CTkLabel(frameDireita, text="Todos os usuários cadastrados", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, pady=10, sticky="ew")
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, sticky="ew", padx=10)
 
-    l_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Verdana 1 '), bg=co3, fg=co1)
-    l_linha.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW) 
-
+    headers = ['id','nome','turma','endereço','email','telefone']
+    widths = [40, 150, 80, 150, 150, 100]
+    tree = criar_tabela(headers, widths)
     dados = listar_usuarios()
-    
-    list_header = ['id','nome','turma','endereço','email','telefone']
-    
-    global tree
-    tree = ttk.Treeview(frameDireita, selectmode="extended", columns=list_header, show="headings")
-    vsb = ttk.Scrollbar(frameDireita, orient="vertical", command=tree.yview)
-    hsb = ttk.Scrollbar(frameDireita, orient="horizontal", command=tree.xview)
-    tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+    if dados:
+        for item in dados: tree.insert('', 'end', values=item)
 
-    tree.grid(column=0, row=2, sticky='nsew', padx=5, pady=5)
-    vsb.grid(column=1, row=2, sticky='ns')
-    hsb.grid(column=0, row=3, columnspan=2, sticky='ew', padx=5)
-
-    h=[20, 80, 80, 120, 120, 100] # Larguras das colunas
-    n=0
-    for col in list_header:
-        tree.heading(col, text=col.title(), anchor='nw') 
-        tree.column(col, width=h[n],anchor='nw')
-        n+=1
-
-    if dados: 
-        for item in dados:
-            tree.insert('', 'end', values=item)
-
-# --- (NOVO) Ver LIVROS ---
+# --- Ver LIVROS ---
 def ver_livros():
-    frameDireita.grid_columnconfigure(0, weight=1) 
-    frameDireita.grid_columnconfigure(1, weight=0) 
-    frameDireita.grid_rowconfigure(2, weight=1) 
+    limpar_frame_direita()
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_rowconfigure(2, weight=1)
 
-    app_ = tk.Label(frameDireita, text="Todos os livros cadastrados", padx=5, pady=10, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)    
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew") 
-    l_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Verdana 1 '), bg=co3, fg=co1)
-    l_linha.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW) 
+    ctk.CTkLabel(frameDireita, text="Todos os livros cadastrados", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, pady=10, sticky="ew")
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, sticky="ew", padx=10)
 
-    dados = listar_livros() # <--- Chama a função de livros
-    
-    list_header = ['id', 'titulo', 'autor', 'editora', 'ano', 'isbn'] # <--- Cabeçalhos de livros
-    
-    global tree
-    tree = ttk.Treeview(frameDireita, selectmode="extended", columns=list_header, show="headings")
-    vsb = ttk.Scrollbar(frameDireita, orient="vertical", command=tree.yview)
-    hsb = ttk.Scrollbar(frameDireita, orient="horizontal", command=tree.xview)
-    tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+    headers = ['id', 'titulo', 'autor', 'editora', 'ano', 'isbn', 'origem']
+    widths = [30, 150, 120, 100, 50, 100, 100]
+    tree = criar_tabela(headers, widths)
+    dados = listar_livros()
+    if dados:
+        for item in dados: tree.insert('', 'end', values=item)
 
-    tree.grid(column=0, row=2, sticky='nsew', padx=5, pady=5)
-    vsb.grid(column=1, row=2, sticky='ns')
-    hsb.grid(column=0, row=3, columnspan=2, sticky='ew', padx=5)
-
-    h=[20, 100, 100, 80, 40, 80] # Larguras das colunas
-    n=0
-    for col in list_header:
-        tree.heading(col, text=col.title(), anchor='nw') 
-        tree.column(col, width=h[n],anchor='nw')
-        n+=1
-
-    if dados: 
-        for item in dados:
-            tree.insert('', 'end', values=item)
-
-# --- (NOVO) Ver EMPRÉSTIMOS ---
+# --- Ver EMPRÉSTIMOS ---
 def ver_emprestimos():
-    frameDireita.grid_columnconfigure(0, weight=1) 
-    frameDireita.grid_columnconfigure(1, weight=0) 
-    frameDireita.grid_rowconfigure(2, weight=1) 
+    limpar_frame_direita()
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_rowconfigure(2, weight=1)
 
-    app_ = tk.Label(frameDireita, text="Todos os empréstimos", padx=5, pady=10, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)    
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew") 
-    l_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Verdana 1 '), bg=co3, fg=co1)
-    l_linha.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW) 
+    ctk.CTkLabel(frameDireita, text="Todos os empréstimos", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, pady=10, sticky="ew")
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, sticky="ew", padx=10)
 
-    dados = listar_emprestimos() # <--- Chama a função de empréstimos
-    
-    list_header = ['id', 'livro', 'usuario', 'data_emp', 'data_prev', 'data_dev'] # <--- Cabeçalhos
-    
-    global tree
-    tree = ttk.Treeview(frameDireita, selectmode="extended", columns=list_header, show="headings")
-    vsb = ttk.Scrollbar(frameDireita, orient="vertical", command=tree.yview)
-    hsb = ttk.Scrollbar(frameDireita, orient="horizontal", command=tree.xview)
-    tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+    headers = ['id', 'livro', 'usuario', 'data_emp', 'data_prev', 'data_dev']
+    widths = [30, 150, 150, 90, 90, 90]
+    tree = criar_tabela(headers, widths)
+    dados = listar_emprestimos()
+    if dados:
+        for item in dados: tree.insert('', 'end', values=item)
 
-    tree.grid(column=0, row=2, sticky='nsew', padx=5, pady=5)
-    vsb.grid(column=1, row=2, sticky='ns')
-    hsb.grid(column=0, row=3, columnspan=2, sticky='ew', padx=5)
-
-    h=[20, 100, 100, 80, 80, 80] # Larguras das colunas
-    n=0
-    for col in list_header:
-        tree.heading(col, text=col.title(), anchor='nw') 
-        tree.column(col, width=h[n],anchor='nw')
-        n+=1
-
-    if dados: 
-        for item in dados:
-            tree.insert('', 'end', values=item)
-
-# --- (NOVO) Realizar EMPRÉSTIMO ---
+# --- Realizar EMPRÉSTIMO ---
 def realizar_emprestimo():
+    limpar_frame_direita()
 
     def add_emprestimo():
         try:
-            livro_str = ELivro.get()
-            usuario_str = EUsuario.get()
-            data_emp = EData.get()
-
+            livro_str = ELivro.get(); usuario_str = EUsuario.get(); data_emp = EData.get()
             if not livro_str or not usuario_str or not data_emp or \
                livro_str == 'Selecione o livro' or usuario_str == 'Selecione o usuário':
                 messagebox.showerror('Erro', 'Preencha todos os campos')
                 return
-
-            id_livro = int(livro_str.split(':')[0])
-            id_usuario = int(usuario_str.split(':')[0])
-
-            insert_loan(id_livro, id_usuario, data_emp)
-            messagebox.showinfo('Sucesso', 'Empréstimo realizado com sucesso!')
+            insert_loan(int(livro_str.split(':')[0]), int(usuario_str.split(':')[0]), data_emp)
+            messagebox.showinfo('Sucesso', 'Empréstimo realizado!')
+            ELivro.set('Selecione o livro'); EUsuario.set('Selecione o usuário')
+            EData.delete(0, 'end'); EData.insert(0, datetime.now().strftime("%d-%m-%Y"))
+        except Exception as e: messagebox.showerror('Erro', f'Erro: {e}')
             
-            # Recarregar a lista de livros (opcional, se quiser controlar estoque)
-            # e limpar os campos
-            ELivro.set('Selecione o livro')
-            EUsuario.set('Selecione o usuário')
-            EData.delete(0, tk.END)
-            EData.insert(0, datetime.now().strftime("%d-%m-%Y"))
-
-        except Exception as e:
-            messagebox.showerror('Erro', f'Ocorreu um erro: {e}')
-            
-    for i in range(5):
-        frameDireita.grid_columnconfigure(i, weight=0)
-
-    for i in range(7):
-        frameDireita.grid_rowconfigure(i, weight=0)
-        
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
     
-    app_ = tk.Label(frameDireita, text="Realizar Empréstimo", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=3, sticky="ew")
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+    ctk.CTkLabel(frameDireita, text="Realizar Empréstimo", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=15)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
 
-    # Livro
-    LLivro = tk.Label(frameDireita, text="Livro *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LLivro.grid(row=2, column=0, padx=5, pady=10, sticky="w")
-    livros_disponiveis = get_all_livros() # <--- Chama a nova função
-    ELivro = ttk.Combobox(frameDireita, width=40, values=livros_disponiveis, font=('Ivy 10'), state='readonly')
-    ELivro.grid(row=2, column=1, padx=5, pady=10, sticky="ew")
-    ELivro.set('Selecione o livro')
+    ctk.CTkLabel(frameDireita, text="Livro *", font=('Verdana', 14), text_color=co0).grid(row=2, column=1, padx=10, pady=15, sticky="e")
+    ELivro = ctk.CTkOptionMenu(frameDireita, width=250, values=get_all_livros(), fg_color="white", text_color="black", state="readonly")
+    ELivro.grid(row=2, column=2, padx=10, pady=15, sticky="w"); ELivro.set('Selecione o livro')
 
-    # Usuário
-    LUsuario = tk.Label(frameDireita, text="Usuário *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LUsuario.grid(row=3, column=0, padx=5, pady=10, sticky="w")
-    usuarios_disponiveis = get_all_usuarios() # <--- Chama a nova função
-    EUsuario = ttk.Combobox(frameDireita, width=40, values=usuarios_disponiveis, font=('Ivy 10'), state='readonly')
-    EUsuario.grid(row=3, column=1, padx=5, pady=10, sticky="ew")
-    EUsuario.set('Selecione o usuário')
+    ctk.CTkLabel(frameDireita, text="Usuário *", font=('Verdana', 14), text_color=co0).grid(row=3, column=1, padx=10, pady=15, sticky="e")
+    EUsuario = ctk.CTkOptionMenu(frameDireita, width=250, values=get_all_usuarios(), fg_color="white", text_color="black", state="readonly")
+    EUsuario.grid(row=3, column=2, padx=10, pady=15, sticky="w"); EUsuario.set('Selecione o usuário')
 
-    # Data Empréstimo
-    LData = tk.Label(frameDireita, text="Data *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LData.grid(row=4, column=0, padx=5, pady=10, sticky="w")
-    EData = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EData.grid(row=4, column=1, padx=5, pady=10, sticky="w")
-    EData.insert(0, datetime.now().strftime("%d-%m-%Y")) # <--- Preenche data de hoje
+    ctk.CTkLabel(frameDireita, text="Data *", font=('Verdana', 14), text_color=co0).grid(row=4, column=1, padx=10, pady=15, sticky="e")
+    EData = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+    EData.grid(row=4, column=2, padx=10, pady=15, sticky="w"); EData.insert(0, datetime.now().strftime("%d-%m-%Y"))
 
-    try:
-        img_salvar = Image.open(resource_path("D:/biblioteca/assets/save.png"))
-        img_salvar = img_salvar.resize((18, 18))
-        img_salvar = ImageTk.PhotoImage(img_salvar)
-    except FileNotFoundError:
-        img_salvar = None
+    img_save = get_ctk_image("save.png")
+    b_salvar = ctk.CTkButton(frameDireita, command=add_emprestimo, image=img_save, text='SALVAR', font=('Ivy', 14), 
+                             fg_color=co1, text_color=co0, hover_color=co1, border_width=1, border_color=co0)
+    b_salvar.grid(row=5, column=2, sticky="w", padx=10, pady=20)
 
-    b_salvar = tk.Button(frameDireita, command=add_emprestimo, image=img_salvar, compound=tk.LEFT, anchor=tk.CENTER,
-                         text=' Salvar', bg=co1, fg=co0, font=('Ivy 11 bold'), overrelief="ridge", relief="groove")
-    b_salvar.grid(row=5, column=1, sticky="w", padx=5, pady=20) 
-    if img_salvar:
-        b_salvar.image = img_salvar
-
-# ===================================================================
-# NOVA FEAT
-# ===================================================================
-
-# --- (NOVO) Alterar Cadastro (USUÁRIO) ---
+# --- Alterar Cadastro (USUÁRIO) ---
 def Alterar_cadastro():
+    limpar_frame_direita()
     
-    # --- Funções Internas ---
     def carregar_dados():
         try:
             usuario_str = EUsuario.get()
-            if not usuario_str or usuario_str == 'Selecione o usuário':
-                messagebox.showerror('Erro', 'Selecione um usuário para carregar')
-                return
-
-            id_usuario = int(usuario_str.split(':')[0])
-            
-            # Busca os dados no banco
-            dados = get_user_by_id(id_usuario) # dados[0]=id, [1]=nome, [2]=turma, etc.
-
-            # Habilita e preenche os campos
-            ENome.config(state='normal')
-            ETurma.config(state='normal')
-            ETel.config(state='normal')
-            EEndereco.config(state='normal')
-            EEmail.config(state='normal')
-            b_salvar.config(state='normal')
-
-            ENome.delete(0, tk.END)
-            ENome.insert(0, dados[1])
-            
-            ETurma.set(dados[2]) # Combobox usa .set()
-            
-            ETel.delete(0, tk.END)
-            ETel.insert(0, dados[5]) # dados[5] é telefone
-            
-            EEndereco.delete(0, tk.END)
-            EEndereco.insert(0, dados[3]) # dados[3] é endereco
-            
-            EEmail.delete(0, tk.END)
-            EEmail.insert(0, dados[4]) # dados[4] é email
-
-        except Exception as e:
-            messagebox.showerror('Erro', f'Não foi possível carregar os dados: {e}')
+            if not usuario_str or usuario_str == 'Selecione o usuário': return
+            dados = get_user_by_id(int(usuario_str.split(':')[0])) 
+            ENome.delete(0, 'end'); ENome.insert(0, dados[1])
+            ETurma.set(dados[2])
+            ETel.delete(0, 'end'); ETel.insert(0, dados[5])
+            EEndereco.delete(0, 'end'); EEndereco.insert(0, dados[3])
+            EEmail.delete(0, 'end'); EEmail.insert(0, dados[4])
+            b_salvar.configure(state='normal')
+        except Exception as e: messagebox.showerror('Erro', f'Erro: {e}')
 
     def salvar_alteracoes():
         try:
-            id_usuario = int(EUsuario.get().split(':')[0])
-            nome = ENome.get()
-            turma = ETurma.get()
-            telefone = ETel.get()
-            endereco = EEndereco.get()
-            email = EEmail.get()
-
-            lista_obrigatoria = [nome, turma]
-            for i in lista_obrigatoria:
-                if i=='' or i=='Selecione a turma':
-                    messagebox.showerror('Erro', 'Preencha todos os campos obrigatórios (*)')
-                    return
-            
-            update_user(id_usuario, nome, turma, endereco, email, telefone)
-            messagebox.showinfo('Sucesso', 'Usuário atualizado com sucesso!')
-
-            # Limpa tudo e recarrega a lista
+            id_user = int(EUsuario.get().split(':')[0])
+            update_user(id_user, ENome.get(), ETurma.get(), EEndereco.get(), EEmail.get(), ETel.get())
+            messagebox.showinfo('Sucesso', 'Atualizado!')
             control('Alterar cadastro')
+        except Exception as e: messagebox.showerror('Erro', f'Erro: {e}')
 
-        except Exception as e:
-            messagebox.showerror('Erro', f'Não foi possível salvar: {e}')
+    # Layout
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
 
-    # --- Configuração do Grid ---
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
-    # ... (Reiniciar pesos das linhas) ...
-    for i in range(10): frameDireita.grid_rowconfigure(i, weight=0)
-
-    # --- Título ---
-    app_ = tk.Label(frameDireita, text="Alterar Cadastro de Usuário", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew")
-
-    # --- Seletor de Usuário ---
-    LUsuario = tk.Label(frameDireita, text="Selecione o Usuário:", font=('Verdana 12'), bg=co12, fg=co0)
-    LUsuario.grid(row=1, column=0, padx=5, pady=10, sticky="w")
+    ctk.CTkLabel(frameDireita, text="Alterar Cadastro de Usuário", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=10)
     
-    lista_usuarios = get_all_usuarios()
-    EUsuario = ttk.Combobox(frameDireita, width=40, values=lista_usuarios, font=('Ivy 10'), state='readonly')
-    EUsuario.grid(row=1, column=1, padx=5, pady=10, sticky="ew")
-    EUsuario.set('Selecione o usuário')
-
-    b_carregar = tk.Button(frameDireita, command=carregar_dados, text='Carregar Dados', bg=co1, fg=co0, font=('Ivy 10 bold'))
-    b_carregar.grid(row=2, column=1, padx=5, pady=5, sticky="w")
-
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=10)
-
-    # --- Campos do Formulário (copiado de Novo_cadastro) ---
-    LNome = tk.Label(frameDireita, text="Nome *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LNome.grid(row=4, column=0, padx=5, pady=10, sticky="w")
-    ENome = tk.Entry(frameDireita, width=25, justify='left', relief="solid", state='disabled')
-    ENome.grid(row=4, column=1, padx=5, pady=10, sticky="ew")
+    ctk.CTkLabel(frameDireita, text="Selecione:", font=('Verdana', 12), text_color=co0).grid(row=1, column=1, padx=10, pady=5, sticky="e")
     
-    LTurma = tk.Label(frameDireita, text="Turma *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LTurma.grid(row=5, column=0, padx=5, pady=10, sticky="w")
-    lista_turmas = ['Primeiro ano', 'Segundo ano', 'Terceiro ano']
-    ETurma = ttk.Combobox(frameDireita, width=23, values=lista_turmas, font=('Ivy 10'), state='disabled')
-    ETurma.grid(row=5, column=1, padx=5, pady=10, sticky="ew")
+    EUsuario = ctk.CTkOptionMenu(frameDireita, width=250, values=get_all_usuarios(), 
+                                 fg_color=co1, text_color=co0)
+    EUsuario.grid(row=1, column=2, padx=10, pady=5, sticky="w"); EUsuario.set('Selecione o usuário')
     
-    LTel = tk.Label(frameDireita, text="Telefone", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LTel.grid(row=6, column=0, padx=5, pady=10, sticky="w")
-    ETel = tk.Entry(frameDireita, width=25, justify='left', relief="solid", state='disabled')
-    ETel.grid(row=6, column=1, padx=5, pady=10, sticky="ew") 
-    
-    LEndereco = tk.Label(frameDireita, text="Endereço", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LEndereco.grid(row=7, column=0, padx=5, pady=10, sticky="w")
-    EEndereco = tk.Entry(frameDireita, width=25, justify='left', relief="solid", state='disabled')
-    EEndereco.grid(row=7, column=1, padx=5, pady=10, sticky="ew")
+    # --- BOTÃO CARREGAR COM BORDA ---
+    # Adicionado border_width e border_color
+    ctk.CTkButton(frameDireita, command=carregar_dados, text='Carregar Dados', width=150, 
+                  fg_color=co1, text_color=co0, hover_color=co1, 
+                  border_width=1, border_color=co0).grid(row=2, column=2, padx=10, pady=5, sticky="w")
 
-    LEmail = tk.Label(frameDireita, text="Email", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LEmail.grid(row=8, column=0, padx=5, pady=10, sticky="w")
-    EEmail = tk.Entry(frameDireita, width=25, justify='left', relief="solid", state='disabled')
-    EEmail.grid(row=8, column=1, padx=5, pady=10, sticky="ew")
-    
-    b_salvar = tk.Button(frameDireita, command=salvar_alteracoes, text=' Salvar Alterações', bg=co1, fg=co0, font=('Ivy 11 bold'))
-    b_salvar.grid(row=9, column=1, sticky="w", padx=5, pady=20) 
-
-# --- (NOVO) Excluir Cadastro (USUÁRIO) ---
-def Excluir_cadastro():
-
-    def deletar_usuario_agora():
-        try:
-            usuario_str = EUsuario.get()
-            if not usuario_str or usuario_str == 'Selecione o usuário':
-                messagebox.showerror('Erro', 'Selecione um usuário para excluir')
-                return
-            
-            id_usuario = int(usuario_str.split(':')[0])
-            nome_usuario = usuario_str.split(':')[1]
-
-            if messagebox.askyesno("Confirmar Exclusão", f"Tem certeza que deseja excluir o usuário:\n\n{nome_usuario}\n\nEsta ação não pode ser desfeita."):
-                delete_user(id_usuario)
-                messagebox.showinfo('Sucesso', 'Usuário excluído com sucesso!')
-                # Recarregar a tela
-                control('Excluir cadastro')
-        except Exception as e:
-            messagebox.showerror('Erro', f'Não foi possível excluir: {e}')
-
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
-    for i in range(4): frameDireita.grid_rowconfigure(i, weight=0)
-
-    app_ = tk.Label(frameDireita, text="Excluir Usuário", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew")
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=10)
-    
-    LUsuario = tk.Label(frameDireita, text="Selecione o Usuário:", font=('Verdana 12'), bg=co12, fg=co0)
-    LUsuario.grid(row=2, column=0, padx=5, pady=10, sticky="w")
-    
-    lista_usuarios = get_all_usuarios()
-    EUsuario = ttk.Combobox(frameDireita, width=40, values=lista_usuarios, font=('Ivy 10'), state='readonly')
-    EUsuario.grid(row=2, column=1, padx=5, pady=10, sticky="ew")
-    EUsuario.set('Selecione o usuário')
-    
-    b_excluir = tk.Button(frameDireita, command=deletar_usuario_agora, text='Excluir Usuário', bg=co1, fg=co0, font=('Ivy 11 bold'))
-    b_excluir.grid(row=3, column=1, padx=5, pady=20, sticky="w")
-
-# --- (NOVO) Alterar LIVRO ---
-def Alterar_livro():
-    
-    # (Funções internas 'carregar_livro' e 'salvar_livro' - similar ao Alterar_cadastro)
-    # ... (Para economizar espaço, esta é uma cópia de Alterar_cadastro, mas para livros) ...
-    
-    def carregar_livro():
-        try:
-            livro_str = ELivro.get()
-            if not livro_str or livro_str == 'Selecione o livro': return
-            id_livro = int(livro_str.split(':')[0])
-            dados = get_book_by_id(id_livro) # [1]=titulo, [2]=autor, [3]=editora, [4]=ano, [5]=isbn
-
-            ETitulo.config(state='normal'); ETitulo.delete(0, tk.END); ETitulo.insert(0, dados[1])
-            EAutor.config(state='normal'); EAutor.delete(0, tk.END); EAutor.insert(0, dados[2])
-            EEditora.config(state='normal'); EEditora.delete(0, tk.END); EEditora.insert(0, dados[3])
-            EAno.config(state='normal'); EAno.delete(0, tk.END); EAno.insert(0, str(dados[4]))
-            EIsbn.config(state='normal'); EIsbn.delete(0, tk.END); EIsbn.insert(0, dados[5])
-            b_salvar.config(state='normal')
-        except Exception as e:
-            messagebox.showerror('Erro', f'Não foi possível carregar: {e}')
-
-    def salvar_livro():
-        try:
-            id_livro = int(ELivro.get().split(':')[0])
-            titulo = ETitulo.get()
-            autor = EAutor.get()
-            editora = EEditora.get()
-            ano = EAno.get()
-            isbn = EIsbn.get()
-
-            if not titulo or not autor:
-                messagebox.showerror('Erro', 'Título e Autor são obrigatórios')
-                return
-
-            update_book(id_livro, titulo, autor, editora, ano, isbn)
-            messagebox.showinfo('Sucesso', 'Livro atualizado com sucesso!')
-            control('Alterar livro')
-        except Exception as e:
-            messagebox.showerror('Erro', f'Não foi possível salvar: {e}')
-
-    frameDireita.grid_columnconfigure(0, weight=0); frameDireita.grid_columnconfigure(1, weight=1)
-    for i in range(10): frameDireita.grid_rowconfigure(i, weight=0)
-
-    app_ = tk.Label(frameDireita, text="Alterar Cadastro de Livro", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew")
-
-    # Seletor
-    LLivro = tk.Label(frameDireita, text="Selecione o Livro:", font=('Verdana 12'), bg=co12, fg=co0)
-    LLivro.grid(row=1, column=0, padx=5, pady=10, sticky="w")
-    lista_livros = get_all_livros()
-    ELivro = ttk.Combobox(frameDireita, width=40, values=lista_livros, font=('Ivy 10'), state='readonly')
-    ELivro.grid(row=1, column=1, padx=5, pady=10, sticky="ew")
-    ELivro.set('Selecione o livro')
-    b_carregar = tk.Button(frameDireita, command=carregar_livro, text='Carregar Dados', bg=co1, fg=co0, font=('Ivy 10 bold'))
-    b_carregar.grid(row=2, column=1, padx=5, pady=5, sticky="w")
-    app_linha = tk.Label(frameDireita, height=1, font=('Ivy 1'), bg=co3)
-    app_linha.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=10)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=3, column=0, columnspan=4, sticky="ew", padx=20, pady=10)
 
     # Campos
-    LTitulo = tk.Label(frameDireita, text="Título *", font=('Verdana 12'), bg=co12, fg=co0)
-    LTitulo.grid(row=4, column=0, padx=5, pady=10, sticky="w")
-    ETitulo = tk.Entry(frameDireita, width=25, relief="solid", state='disabled')
-    ETitulo.grid(row=4, column=1, padx=5, pady=10, sticky="ew")
+    ctk.CTkLabel(frameDireita, text="Nome *", font=('Verdana', 14), text_color=co0).grid(row=4, column=1, padx=10, sticky="e")
+    ENome = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); ENome.grid(row=4, column=2, padx=10, pady=5, sticky="w")
     
-    LAutor = tk.Label(frameDireita, text="Autor *", font=('Verdana 12'), bg=co12, fg=co0)
-    LAutor.grid(row=5, column=0, padx=5, pady=10, sticky="w")
-    EAutor = tk.Entry(frameDireita, width=25, relief="solid", state='disabled')
-    EAutor.grid(row=5, column=1, padx=5, pady=10, sticky="ew")
+    ctk.CTkLabel(frameDireita, text="Turma *", font=('Verdana', 14), text_color=co0).grid(row=5, column=1, padx=10, sticky="e")
+    ETurma = ctk.CTkOptionMenu(frameDireita, width=250, values=['Sexto ano', 'Sétimo ano', 'Oitavo ano', 'Nono ano'], fg_color="white", text_color="black")
+    ETurma.grid(row=5, column=2, padx=10, pady=5, sticky="w")
     
-    LEditora = tk.Label(frameDireita, text="Editora", font=('Verdana 12'), bg=co12, fg=co0)
-    LEditora.grid(row=6, column=0, padx=5, pady=10, sticky="w")
-    EEditora = tk.Entry(frameDireita, width=25, relief="solid", state='disabled')
-    EEditora.grid(row=6, column=1, padx=5, pady=10, sticky="ew") 
+    ctk.CTkLabel(frameDireita, text="Telefone", font=('Verdana', 14), text_color=co0).grid(row=6, column=1, padx=10, sticky="e")
+    ETel = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); ETel.grid(row=6, column=2, padx=10, pady=5, sticky="w")
     
-    LAno = tk.Label(frameDireita, text="Ano", font=('Verdana 12'), bg=co12, fg=co0)
-    LAno.grid(row=7, column=0, padx=5, pady=10, sticky="w")
-    EAno = tk.Entry(frameDireita, width=25, relief="solid", state='disabled')
-    EAno.grid(row=7, column=1, padx=5, pady=10, sticky="w")
+    ctk.CTkLabel(frameDireita, text="Endereço", font=('Verdana', 14), text_color=co0).grid(row=7, column=1, padx=10, sticky="e")
+    EEndereco = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); EEndereco.grid(row=7, column=2, padx=10, pady=5, sticky="w")
 
-    LIsbn = tk.Label(frameDireita, text="ISBN", font=('Verdana 12'), bg=co12, fg=co0)
-    LIsbn.grid(row=8, column=0, padx=5, pady=10, sticky="w")
-    EIsbn = tk.Entry(frameDireita, width=25, relief="solid", state='disabled')
-    EIsbn.grid(row=8, column=1, padx=5, pady=10, sticky="w")
+    ctk.CTkLabel(frameDireita, text="Email", font=('Verdana', 14), text_color=co0).grid(row=8, column=1, padx=10, sticky="e")
+    EEmail = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); EEmail.grid(row=8, column=2, padx=10, pady=5, sticky="w")
     
-    b_salvar = tk.Button(frameDireita, command=salvar_livro, text=' Salvar Alterações', bg=co1, fg=co0, font=('Ivy 11 bold'))
-    b_salvar.grid(row=9, column=1, sticky="w", padx=5, pady=20) 
-
-# --- (NOVO) Excluir Livro ---
-def Excluir_livro():
-
-    def deletar_livro_agora():
+    b_salvar = ctk.CTkButton(frameDireita, command=salvar_alteracoes, text='SALVAR ALTERAÇÕES', fg_color=co1, text_color=co0, hover_color=co1)
+    b_salvar.grid(row=9, column=2, sticky="w", padx=10, pady=20)
+# --- Excluir Cadastro ---
+def Excluir_cadastro():
+    limpar_frame_direita()
+    def deletar():
         try:
-            livro_str = ELivro.get()
-            if not livro_str or livro_str == 'Selecione o livro':
-                messagebox.showerror('Erro', 'Selecione um livro para excluir')
-                return
-            
-            id_livro = int(livro_str.split(':')[0])
-            nome_livro = livro_str.split(':')[1]
+            user = EUsuario.get()
+            if not user or user == 'Selecione o usuário': return
+            if messagebox.askyesno("Confirmar", f"Excluir {user}?"):
+                delete_user(int(user.split(':')[0]))
+                messagebox.showinfo('Sucesso', 'Excluído!')
+                control('Excluir cadastro')
+        except: messagebox.showerror('Erro', 'Erro ao excluir')
 
-            if messagebox.askyesno("Confirmar Exclusão", f"Tem certeza que deseja excluir o livro:\n\n{nome_livro}\n\nEsta ação não pode ser desfeita."):
-                delete_book(id_livro)
-                messagebox.showinfo('Sucesso', 'Livro excluído com sucesso!')
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
+
+    ctk.CTkLabel(frameDireita, text="Excluir Usuário", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=20)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
+    
+    ctk.CTkLabel(frameDireita, text="Selecione:", font=('Verdana', 14), text_color=co0).grid(row=2, column=1, padx=10, pady=20, sticky="e")
+    EUsuario = ctk.CTkOptionMenu(frameDireita, width=250, values=get_all_usuarios(), fg_color="white", text_color="black", state="readonly")
+    EUsuario.grid(row=2, column=2, padx=10, pady=20, sticky="w"); EUsuario.set('Selecione o usuário')
+    
+    img_del = get_ctk_image("delete.png")
+    ctk.CTkButton(frameDireita, command=deletar, image=img_del, text='EXCLUIR USUÁRIO', fg_color=co1, text_color=co0, hover_color=co1).grid(row=3, column=2, padx=10, sticky="w")
+
+# --- Alterar LIVRO ---
+def Alterar_livro():
+    limpar_frame_direita()
+    
+    def carregar():
+        try:
+            livro = ELivro.get()
+            if not livro or livro == 'Selecione o livro': return
+            dados = get_book_by_id(int(livro.split(':')[0])) 
+            ETitulo.delete(0,'end'); ETitulo.insert(0, dados[1])
+            EAutor.delete(0,'end'); EAutor.insert(0, dados[2])
+            EEditora.delete(0,'end'); EEditora.insert(0, dados[3])
+            EAno.delete(0,'end'); EAno.insert(0, str(dados[4]))
+            EIsbn.delete(0,'end'); EIsbn.insert(0, dados[5])
+            val_origem = dados[6] if len(dados) > 6 else "Doação"
+            EOrigem.set(val_origem)
+            b_salvar.configure(state='normal')
+        except: pass
+
+    def salvar():
+        try:
+            update_book(int(ELivro.get().split(':')[0]), ETitulo.get(), EAutor.get(), EEditora.get(), EAno.get(), EIsbn.get(), EOrigem.get())
+            messagebox.showinfo('Sucesso', 'Atualizado!')
+            control('Alterar livro') 
+        except: messagebox.showerror('Erro', 'Erro ao salvar')
+
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
+
+    ctk.CTkLabel(frameDireita, text="Alterar Livro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=10)
+    
+    ctk.CTkLabel(frameDireita, text="Selecione:", font=('Verdana', 12), text_color=co0).grid(row=1, column=1, padx=10, sticky="e")
+    
+    ELivro = ctk.CTkOptionMenu(frameDireita, width=200, values=get_all_livros(), 
+                               fg_color=co1, text_color=co0)
+    ELivro.grid(row=1, column=2, padx=10, sticky="w"); ELivro.set('Selecione o livro')
+    
+    # --- BOTÃO CARREGAR COM BORDA ---
+    ctk.CTkButton(frameDireita, command=carregar, text='Carregar', width=80, 
+                  fg_color=co1, text_color=co0, hover_color=co1,
+                  border_width=1, border_color=co0).grid(row=2, column=2, padx=10, pady=5, sticky="w")
+
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=3, column=0, columnspan=4, sticky="ew", padx=20, pady=10)
+
+    campos = [("Título *", 4), ("Autor *", 5), ("Editora", 6), ("Ano", 7), ("ISBN", 8)]
+    entries = {}
+    for txt, ln in campos:
+        ctk.CTkLabel(frameDireita, text=txt, font=('Verdana', 14), text_color=co0).grid(row=ln, column=1, padx=10, sticky="e")
+        e = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); e.grid(row=ln, column=2, padx=10, pady=5, sticky="w")
+        entries[txt] = e
+    ETitulo=entries["Título *"]; EAutor=entries["Autor *"]; EEditora=entries["Editora"]; EAno=entries["Ano"]; EIsbn=entries["ISBN"]
+    
+    ctk.CTkLabel(frameDireita, text="Origem *", font=('Verdana', 14), text_color=co0).grid(row=9, column=1, padx=10, sticky="e")
+    EOrigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo'], fg_color="white", text_color="black")
+    EOrigem.grid(row=9, column=2, padx=10, pady=5, sticky="w"); EOrigem.set('Selecione a origem')
+
+    b_salvar = ctk.CTkButton(frameDireita, command=salvar, text='SALVAR ALTERAÇÕES', fg_color=co1, text_color=co0, hover_color=co1)
+    b_salvar.grid(row=10, column=2, sticky="w", padx=10, pady=20)
+# --- Excluir Livro ---
+def Excluir_livro():
+    limpar_frame_direita()
+    def deletar():
+        try:
+            item = ELivro.get()
+            if not item or item == 'Selecione o livro': return
+            if messagebox.askyesno("Confirmar", f"Excluir {item}?"):
+                delete_book(int(item.split(':')[0]))
+                messagebox.showinfo('Sucesso', 'Excluído!')
                 control('Excluir livro')
-        except Exception as e:
-            messagebox.showerror('Erro', f'Não foi possível excluir: {e}')
+        except: messagebox.showerror('Erro', 'Erro')
 
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
-    for i in range(4): frameDireita.grid_rowconfigure(i, weight=0)
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
+    ctk.CTkLabel(frameDireita, text="Excluir Livro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=20)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
+    ctk.CTkLabel(frameDireita, text="Selecione:", font=('Verdana', 14), text_color=co0).grid(row=2, column=1, padx=10, pady=20, sticky="e")
+    ELivro = ctk.CTkOptionMenu(frameDireita, width=250, values=get_all_livros(), fg_color="white", text_color="black", state="readonly")
+    ELivro.grid(row=2, column=2, padx=10, pady=20, sticky="w"); ELivro.set('Selecione o livro')
+    
+    img_del = get_ctk_image("delete.png")
+    ctk.CTkButton(frameDireita, command=deletar, image=img_del, text='EXCLUIR LIVRO', fg_color=co1, text_color=co0, hover_color=co1).grid(row=3, column=2, padx=10, sticky="w")
 
-    app_ = tk.Label(frameDireita, text="Excluir Livro", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew")
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=10)
-    
-    LLivro = tk.Label(frameDireita, text="Selecione o Livro:", font=('Verdana 12'), bg=co12, fg=co0)
-    LLivro.grid(row=2, column=0, padx=5, pady=10, sticky="w")
-    
-    lista_livros = get_all_livros()
-    ELivro = ttk.Combobox(frameDireita, width=40, values=lista_livros, font=('Ivy 10'), state='readonly')
-    ELivro.grid(row=2, column=1, padx=5, pady=10, sticky="ew")
-    ELivro.set('Selecione o livro')
-    
-    b_excluir = tk.Button(frameDireita, command=deletar_livro_agora, text='Excluir Livro', bg=co1, fg=co0, font=('Ivy 11 bold'))
-    b_excluir.grid(row=3, column=1, padx=5, pady=20, sticky="w")
-    
-    # Livro
-    LLivro = tk.Label(frameDireita, text="Livro *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LLivro.grid(row=2, column=0, padx=5, pady=10, sticky="w")
-    livros_disponiveis = get_all_livros() # <--- Chama a nova função
-    ELivro = ttk.Combobox(frameDireita, width=40, values=livros_disponiveis, font=('Ivy 10'), state='readonly')
-    ELivro.grid(row=2, column=1, padx=5, pady=10, sticky="ew")
-    ELivro.set('Selecione o livro')
-# --- (NOVO) Realizar DEVOLUÇÃO ---
+# --- Realizar DEVOLUÇÃO ---
 def realizar_devolucao():
-
+    limpar_frame_direita()
     def add_devolucao():
         try:
-            emprestimo_str = EEmprestimo.get()
-            data_dev = EData.get()
-
-            if not emprestimo_str or not data_dev or emprestimo_str == 'Selecione o empréstimo':
-                messagebox.showerror('Erro', 'Preencha todos os campos')
+            emp_str = EEmprestimo.get(); data_dev = EData.get()
+            if not emp_str or not data_dev or emp_str == 'Selecione o empréstimo':
+                messagebox.showerror('Erro', 'Preencha tudo')
                 return
-
-            id_emprestimo = int(emprestimo_str.split(':')[0])
-
-            devolver_livro(id_emprestimo, data_dev)
-            messagebox.showinfo('Sucesso', 'Devolução registrada com sucesso!')
+            devolver_livro(int(emp_str.split(':')[0]), data_dev)
+            messagebox.showinfo('Sucesso', 'Devolvido!')
+            EEmprestimo.configure(values=get_active_loans()); EEmprestimo.set('Selecione o empréstimo')
+            EData.delete(0, 'end'); EData.insert(0, datetime.now().strftime("%d-%m-%Y"))
+        except Exception as e: messagebox.showerror('Erro', f'Erro: {e}')
             
-            # Recarregar a lista de empréstimos ativos
-            EEmprestimo['values'] = get_active_loans()
-            EEmprestimo.set('Selecione o empréstimo')
-            EData.delete(0, tk.END)
-            EData.insert(0, datetime.now().strftime("%d-%m-%Y"))
+    frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
+    ctk.CTkLabel(frameDireita, text="Realizar Devolução", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=15)
+    ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
 
-        except Exception as e:
-            messagebox.showerror('Erro', f'Ocorreu um erro: {e}')
-            
-    for i in range(5):
-        frameDireita.grid_columnconfigure(i, weight=0)
-    for i in range(7):
-        frameDireita.grid_rowconfigure(i, weight=0)
-        
-    frameDireita.grid_columnconfigure(0, weight=0) 
-    frameDireita.grid_columnconfigure(1, weight=1)
-    
-    app_ = tk.Label(frameDireita, text="Realizar Devolução", padx=5, pady=5, font=('Verdana 14'), bg=co12, fg=co0, anchor=tk.CENTER)
-    app_.grid(row=0, column=0, columnspan=2, sticky="ew")
-    app_linha = tk.Label(frameDireita, height=1, anchor=tk.NW, font=('Ivy 1'), bg=co3, fg=co1)
-    app_linha.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+    ctk.CTkLabel(frameDireita, text="Empréstimo *", font=('Verdana', 14), text_color=co0).grid(row=2, column=1, padx=10, pady=15, sticky="e")
+    EEmprestimo = ctk.CTkOptionMenu(frameDireita, width=250, values=get_active_loans(), fg_color="white", text_color="black", state="readonly")
+    EEmprestimo.grid(row=2, column=2, padx=10, pady=15, sticky="w"); EEmprestimo.set('Selecione o empréstimo')
 
-    # Empréstimo Ativo
-    LEmprestimo = tk.Label(frameDireita, text="Empréstimo *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LEmprestimo.grid(row=2, column=0, padx=5, pady=10, sticky="w")
-    emprestimos_ativos = get_active_loans() # <--- Chama a nova função
-    EEmprestimo = ttk.Combobox(frameDireita, width=40, values=emprestimos_ativos, font=('Ivy 10'), state='readonly')
-    EEmprestimo.grid(row=2, column=1, padx=5, pady=10, sticky="ew")
-    EEmprestimo.set('Selecione o empréstimo')
+    ctk.CTkLabel(frameDireita, text="Data Devolução *", font=('Verdana', 14), text_color=co0).grid(row=3, column=1, padx=10, pady=15, sticky="e")
+    EData = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black")
+    EData.grid(row=3, column=2, padx=10, pady=15, sticky="w"); EData.insert(0, datetime.now().strftime("%d-%m-%Y")) 
 
-    # Data Devolução
-    LData = tk.Label(frameDireita, text="Data Devolução *", font=('Verdana 12'), bg=co12, fg=co0, anchor=tk.NW)
-    LData.grid(row=3, column=0, padx=5, pady=10, sticky="w")
-    EData = tk.Entry(frameDireita, width=25, justify='left', relief="solid")
-    EData.grid(row=3, column=1, padx=5, pady=10, sticky="w")
-    EData.insert(0, datetime.now().strftime("%d-%m-%Y")) # <--- Preenche data de hoje
+    img_save = get_ctk_image("save.png")
+    b_salvar = ctk.CTkButton(frameDireita, command=add_devolucao, image=img_save, text='SALVAR DEVOLUÇÃO', font=('Ivy', 14), fg_color=co1, text_color=co0, hover_color=co1)
+    b_salvar.grid(row=4, column=2, sticky="w", padx=10, pady=20) 
 
-    try:
-        img_salvar = Image.open(resource_path("assets/save.png"))
-        img_salvar = img_salvar.resize((18, 18))
-        img_salvar = ImageTk.PhotoImage(img_salvar)
-    except FileNotFoundError:
-        img_salvar = None
-
-    b_salvar = tk.Button(frameDireita, command=add_devolucao, image=img_salvar, compound=tk.LEFT, anchor=tk.CENTER,
-                         text=' Salvar Devolução', bg=co1, fg=co0, font=('Ivy 11 bold'), overrelief="ridge", relief="groove")
-    b_salvar.grid(row=4, column=1, sticky="w", padx=5, pady=20) 
-    if img_salvar:
-        b_salvar.image = img_salvar
-# ============== TELA INICIAL =====================
-
-# ===================================================================
-# (COLE ESTA FUNÇÃO JUNTO COM AS OUTRAS)
-# ===================================================================
-# ===================================================================
-# (FUNÇÃOmostrar_tela_inicial MODIFICADA)
-# ===================================================================
-
+# --- TELA INICIAL ---
 def mostrar_tela_inicial():
-    # --- Limpa o frameDireita ---
-    for widget in frameDireita.winfo_children():
-        widget.destroy()
-
-    # --- REINICIA A CONFIGURAÇÃO DO GRID ---
-    for i in range(10): 
-        frameDireita.grid_columnconfigure(i, weight=0)
-        frameDireita.grid_rowconfigure(i, weight=0)
-
-    # --- Configura o fundo do frameDireita para a tela inicial ---
-    # Usaremos um verde mais claro para o fundo da logo, se você definiu co12
-    frameDireita.config(bg=co12) # Use co12 ou a cor que preferir
-
-    # --- Cria um Canvas para desenhar a logo ---
-    canvas = tk.Canvas(frameDireita, bg=co12, highlightthickness=0) # Sem borda
-    canvas.pack(expand=True, padx=20, pady=20) # Centraliza o canvas e dá um respiro
-
-    # --- Desenha a logo do Instituto Federal ---
-    # Define o tamanho dos quadrados e o espaçamento
-    quad_size = 40
-    spacing = 10
-    red_circle_radius = quad_size / 2 # Raio do círculo
+    limpar_frame_direita()
     
-    # Cores
-    color_green = "#2bb937" # Seu co9 (verde mais forte)
-    color_red = "#e06636"   # Seu co5 (vermelho)
-    color_transparent = "#ff0000ff"
+    canvas = ctk.CTkCanvas(frameDireita, bg=co12, highlightthickness=0) 
+    canvas.pack(expand=True, padx=20, pady=20) 
 
-    # Função auxiliar para desenhar um quadrado
+    quad_size = 40; spacing = 10; red_circle_radius = quad_size / 2 
+    color_green = "#2bb937"; color_red = "#e06636"
+
     def draw_square(x, y, color):
         canvas.create_rectangle(x, y, x + quad_size, y + quad_size, fill=color, outline=color)
 
-    # Define a posição inicial para o desenho (para centralizar o conjunto da logo)
-    # A logo tem 3 colunas de quadrados (mais o círculo) e 4 linhas
-    # Largura total = 3*quad_size + 2*spacing
-    # Altura total = 4*quad_size + 3*spacing
-    
-    # Ajuste para centralizar:
-    total_width = 3 * quad_size + 2 * spacing
-    total_height = 4 * quad_size + 3 * spacing
-    
-    # Posiciona o desenho no centro do canvas
-    # (canvas.winfo_width() e canvas.winfo_height() podem não estar disponíveis
-    #  imediatamente, então ajustamos o posicionamento depois ou centralizamos no pack)
-    # Vamos usar um ponto de partida fixo e o pack/expand irá centralizar o canvas.
-    start_x = 120 # Relativo ao canvas
-    start_y = 0 # Relativo ao canvas
-
-    # --- Primeira Linha ---
-    # Círculo Vermelho
-    canvas.create_oval(
-        start_x, start_y, 
-        start_x + red_circle_radius * 2, start_y + red_circle_radius * 2, 
-        fill=color_red, outline=color_red
-    )
-    
-    # Quadrados Verdes
+    start_x = 120; start_y = 0 
+    canvas.create_oval(start_x, start_y, start_x + red_circle_radius * 2, start_y + red_circle_radius * 2, fill=color_red, outline=color_red)
     draw_square(start_x + quad_size + spacing, start_y, color_green)
     draw_square(start_x + 2*(quad_size + spacing), start_y, color_green)
-
-    # --- Segunda Linha ---
     draw_square(start_x, start_y + quad_size + spacing, color_green)
     draw_square(start_x + quad_size + spacing, start_y + quad_size + spacing, color_green)
     draw_square(start_x + 2*(quad_size + spacing), start_y + quad_size + spacing, co12)
-
-    # --- Terceira Linha ---
     draw_square(start_x, start_y + 2*(quad_size + spacing), color_green)
     draw_square(start_x + quad_size + spacing, start_y + 2*(quad_size + spacing), color_green)
     draw_square(start_x + 2*(quad_size + spacing), start_y + 2*(quad_size + spacing), color_green)
-
-    # --- Quarta Linha ---
     draw_square(start_x, start_y + 3*(quad_size + spacing), color_green)
     draw_square(start_x + quad_size + spacing, start_y + 3*(quad_size + spacing), color_green)
     
-    # --- IMPORTANTE: Certifique-se de que a imagem da logo anterior não está sendo carregada aqui ---
-    # Se você tinha um Label com image no mostrar_tela_inicial, remova-o.
-    # Apenas o canvas deve estar no pack.
-# ===================================================================
-# FUNÇÃO DE CONTROLE PRINCIPAL
-# ===================================================================
-      
+# --- MENU CONTROL ---
 def control(i):
-    # Limpa o frameDireita antes de carregar a nova tela
-    for widget in frameDireita.winfo_children():
-        widget.destroy()
+    limpar_frame_direita()
+    if i == 'Novo cadastro': Novo_cadastro()
+    elif i == 'Novo Livro': Novo_livro()
+    elif i == 'Consultar Livros': ver_livros()
+    elif i == 'Consultar pessoas cadastradas': ver_usuarios()
+    elif i == 'Consultar empréstimos': ver_emprestimos()
+    elif i == 'Realizar empréstimo': realizar_emprestimo()
+    elif i == 'Devolução': realizar_devolucao()
+    elif i == 'Alterar cadastro': Alterar_cadastro()
+    elif i == 'Excluir cadastro': Excluir_cadastro()
+    elif i == 'Alterar livro': Alterar_livro()
+    elif i == 'Excluir livro': Excluir_livro()
 
-    if i == 'Novo cadastro':
-        Novo_cadastro()
-    elif i == 'Novo Livro':
-        Novo_livro()
-    elif i == 'Consultar Livros':
-        ver_livros()
-    elif i == 'Consultar pessoas cadastradas':
-        ver_usuarios()
-    elif i == 'Consultar empréstimos':
-        ver_emprestimos()
-    elif i == 'Realizar empréstimo':
-        realizar_emprestimo()
-    elif i == 'Devolução':
-        realizar_devolucao()
-    
-    # --- NOVOS COMANDOS ADICIONADOS ---
-    elif i == 'Alterar cadastro':
-        Alterar_cadastro()
-    elif i == 'Excluir cadastro':
-        Excluir_cadastro()
-    elif i == 'Alterar livro':
-        Alterar_livro()
-    elif i == 'Excluir livro':
-        Excluir_livro()
 # ===================================================================
-# MENU (Botões da Esquerda) - AGORA COM COMANDOS
+# MENU LATERAL (BOTÕES)
 # ===================================================================
+def criar_botao_menu(texto, imagem_nome, comando, linha):
+    img = get_ctk_image(imagem_nome)
+    btn = ctk.CTkButton(frameEsquerda, command=comando, image=img, text=texto, anchor="w",
+                        fg_color=co8, text_color=co0, hover_color=co1, 
+                        font=('Ivy', 11), corner_radius=0, height=40)
+    btn.grid(row=linha, column=0, sticky="ew", padx=2, pady=2)
 
-# NOVO USUARIO
-img_usuario = Image.open(resource_path("assets/plus.png"))
-img_usuario = img_usuario.resize((18, 18))
-img_usuario = ImageTk.PhotoImage(img_usuario)
-b_usuario = tk.Button(frameEsquerda, command=lambda:control('Novo cadastro'),image=img_usuario, compound=tk.LEFT, anchor=tk.NW, text='Novo cadastro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_usuario.grid(row=0, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# NOVO LIVRO
-img_livro = Image.open(resource_path("assets/plus.png"))
-img_livro = img_livro.resize((18, 18))
-img_livro = ImageTk.PhotoImage(img_livro)
-b_livro = tk.Button(frameEsquerda, command=lambda:control('Novo Livro'), image=img_livro, compound=tk.LEFT, anchor=tk.NW, text='Novo Livro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_livro.grid(row=1, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# VER LIVROS
-img_ver = Image.open(resource_path("assets/icons8-book-100.png"))
-img_ver = img_ver.resize((18, 18))
-img_ver = ImageTk.PhotoImage(img_ver)
-b_ver = tk.Button(frameEsquerda, command=lambda:control('Consultar Livros'), image=img_ver, compound=tk.LEFT, anchor=tk.NW, text='Consultar Livros', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_ver.grid(row=2, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# VER USUARIOS
-img_verUser = Image.open(resource_path("assets/pessoa.png"))
-img_verUser = img_verUser.resize((18, 18))
-img_verUser = ImageTk.PhotoImage(img_verUser)
-b_verUser = tk.Button(frameEsquerda, command=lambda:control('Consultar pessoas cadastradas'), image=img_verUser, compound=tk.LEFT, anchor=tk.NW, text='Consultar pessoas cadastradas', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_verUser.grid(row=3, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# VER EMPRESTIMOS
-img_verempresta = Image.open(resource_path("assets/consulta.png"))
-img_verempresta = img_verempresta.resize((18, 18))
-img_verempresta = ImageTk.PhotoImage(img_verempresta)
-b_verempresta = tk.Button(frameEsquerda, command=lambda:control('Consultar empréstimos'), image=img_verempresta, compound=tk.LEFT, anchor=tk.NW, text='Consultar empréstimos', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_verempresta.grid(row=4, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# EMPRESTIMO
-img_empresta = Image.open(resource_path("assets/emprestar.png"))
-img_empresta = img_empresta.resize((18, 18))
-img_empresta = ImageTk.PhotoImage(img_empresta)
-b_empresta = tk.Button(frameEsquerda, command=lambda:control('Realizar empréstimo'), image=img_empresta, compound=tk.LEFT, anchor=tk.NW, text='Realizar empréstimo', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_empresta.grid(row=6, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# DEVOLUCAO
-img_devolve = Image.open(resource_path("assets/icons8-reload-100.png"))
-img_devolve = img_devolve.resize((18, 18))
-img_devolve = ImageTk.PhotoImage(img_devolve)
-b_devolve = tk.Button(frameEsquerda, command=lambda:control('Devolução'), image=img_devolve, compound=tk.LEFT, anchor=tk.NW, text='Devolução', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_devolve.grid(row=7, column=0, sticky=tk.NSEW, padx=5, pady=6)
-# ------- novo --------
-# ===================================================================
-# MENU (Botões da Esquerda) - (COLE NO FINAL)
-# ===================================================================
+botoes = [
+    ('Novo cadastro', 'plus.png', lambda: control('Novo cadastro')),
+    ('Novo Livro', 'plus.png', lambda: control('Novo Livro')),
+    ('Consultar Livros', 'icons8-book-100.png', lambda: control('Consultar Livros')),
+    ('Ver Usuários', 'pessoa.png', lambda: control('Consultar pessoas cadastradas')),
+    ('Ver Empréstimos', 'consulta.png', lambda: control('Consultar empréstimos')),
+    ('Empréstimo', 'emprestar.png', lambda: control('Realizar empréstimo')),
+    ('Devolução', 'icons8-reload-100.png', lambda: control('Devolução')),
+    ('Alterar usuário', 'edit.png', lambda: control('Alterar cadastro')),
+    ('Excluir usuário', 'delete.png', lambda: control('Excluir cadastro')),
+    ('Alterar livro', 'edit.png', lambda: control('Alterar livro')),
+    ('Excluir livro', 'delete.png', lambda: control('Excluir livro')),
+]
 
-# (Botão de Devolução ... )
-b_devolve.grid(row=7, column=0, sticky=tk.NSEW, padx=5, pady=6)
+for i, (txt, img, cmd) in enumerate(botoes):
+    criar_botao_menu(txt, img, cmd, i)
 
-# --- (NOVOS BOTÕES) ---
-
-# ALTERAR USUARIO
-# (Vou usar 'edit.png' e 'delete.png', troque se o nome for diferente)
-try:
-    img_edit = Image.open(resource_path("assets/edit.png")) # Assumindo que você tem 'edit.png'
-    img_edit = img_edit.resize((18, 18))
-    img_edit = ImageTk.PhotoImage(img_edit)
-except:
-    img_edit = img_usuario # Reutiliza a imagem 'plus' se não achar
-
-b_alterar_usuario = tk.Button(frameEsquerda, command=lambda:control('Alterar cadastro'),image=img_edit, compound=tk.LEFT, anchor=tk.NW, text='Alterar cadastro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_alterar_usuario.grid(row=8, column=0, sticky=tk.NSEW, padx=5, pady=6)
-
-# EXCLUIR USUARIO
-try:
-    img_delete = Image.open(resource_path("assets/delete.png")) # Assumindo que você tem 'delete.png'
-    img_delete = img_delete.resize((18, 18))
-    img_delete = ImageTk.PhotoImage(img_delete)
-except:
-    img_delete = img_usuario # Reutiliza a imagem 'plus' se não achar
-
-b_excluir_usuario = tk.Button(frameEsquerda, command=lambda:control('Excluir cadastro'),image=img_delete, compound=tk.LEFT, anchor=tk.NW, text='Excluir cadastro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_excluir_usuario.grid(row=9, column=0, sticky=tk.NSEW, padx=5, pady=6)
-
-# ALTERAR LIVRO
-b_alterar_livro = tk.Button(frameEsquerda, command=lambda:control('Alterar livro'),image=img_edit, compound=tk.LEFT, anchor=tk.NW, text='Alterar livro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_alterar_livro.grid(row=10, column=0, sticky=tk.NSEW, padx=5, pady=6)
-
-# EXCLUIR LIVRO
-b_excluir_livro = tk.Button(frameEsquerda, command=lambda:control('Excluir livro'),image=img_delete, compound=tk.LEFT, anchor=tk.NW, text='Excluir livro', bg=co8, fg=co0, font=('Ivy 11'), overrelief="ridge", relief="groove")
-b_excluir_livro.grid(row=11, column=0, sticky=tk.NSEW, padx=5, pady=6)
 # --- Inicia a aplicação ---
 mostrar_tela_inicial()
 janela.mainloop()

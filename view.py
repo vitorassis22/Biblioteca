@@ -6,12 +6,12 @@ def connect():
     return sqlite3.connect('dados.db')
 
 # Inserir novo livro
-def insert_book(titulo, autor, editora, ano, isbn):
+def insert_book(titulo, autor, editora, ano, isbn, origem):
     con = connect()
     cursor = con.cursor()
     cursor.execute(
-        "INSERT INTO livros (titulo, autor, editora, ano_publicacao, isbn) VALUES (?, ?, ?, ?, ?)",
-        (titulo, autor, editora, ano, isbn)
+        "INSERT INTO livros (titulo, autor, editora, ano_publicacao, isbn, origem) VALUES (?, ?, ?, ?, ?, ?)",
+        (titulo, autor, editora, ano, isbn, origem)
     )
     con.commit()
     con.close()
@@ -57,7 +57,7 @@ def insert_loan(id_livro, id_usuario, data_emprestimo, data_devolucao=None):
 def listar_livros():
     con = connect()
     cursor = con.cursor()
-    cursor.execute("SELECT id, titulo, autor, editora, ano_publicacao, isbn FROM livros")
+    cursor.execute("SELECT id, titulo, autor, editora, ano_publicacao, isbn, origem FROM livros")
     livros = cursor.fetchall()
     con.close()
     
@@ -88,6 +88,9 @@ def listar_usuarios():
     return usuarios # <--- CORRETO (Já tinha)
 
 #Listar emprestimos
+# --- view.py ---
+
+# Listar APENAS empréstimos PENDENTES (que não foram devolvidos)
 def listar_emprestimos():
     con = connect()
     cur = con.cursor()
@@ -97,18 +100,11 @@ def listar_emprestimos():
         FROM emprestimos
         INNER JOIN livros ON livros.id = emprestimos.id_livro
         INNER JOIN usuarios ON usuarios.id = emprestimos.id_usuario
+        WHERE emprestimos.data_devolucao IS NULL OR emprestimos.data_devolucao = ""
     ''')
     rows = cur.fetchall()
     con.close()
-    
-    print("\n=== EMPRÉSTIMOS (via print) ===")
-    if not rows:
-        print("Nenhum empréstimo cadastrado.")
-    else:
-        for r in rows:
-            print(f"ID:{r[0]} | Livro:{r[1]} | Usuário:{r[2]}")
-            
-    return rows # <--- CORRIGIDO: Adicionado return
+    return rows
 
 # Atualizar data de devolucao
 def devolver_livro(id_emprestimo, data_devolucao):
@@ -219,13 +215,13 @@ def update_user(id, nome, turma, endereco, email, telefone):
     con.close()
     print(f"Usuário ID {id} atualizado.")
 
-def update_book(id, titulo, autor, editora, ano, isbn):
+def update_book(id, titulo, autor, editora, ano, isbn, origem):
     con = connect()
     cursor = con.cursor()
     cursor.execute(
-        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?
+        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?
            WHERE id = ?""",
-        (titulo, autor, editora, ano, isbn, id)
+        (titulo, autor, editora, ano, isbn, origem, id)
     )
     con.commit()
     con.close()
@@ -265,13 +261,13 @@ def update_user(id, nome, turma, endereco, email, telefone):
     con.close()
     print(f"Usuário ID {id} atualizado.")
 
-def update_book(id, titulo, autor, editora, ano, isbn):
+def update_book(id, titulo, autor, editora, ano, isbn, origem):
     con = connect()
     cursor = con.cursor()
     cursor.execute(
-        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?
+        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?
            WHERE id = ?""",
-        (titulo, autor, editora, ano, isbn, id)
+        (titulo, autor, editora, ano, isbn, origem, id)
     )
     con.commit()
     con.close()

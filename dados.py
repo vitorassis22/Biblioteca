@@ -14,7 +14,8 @@ def inicializar_banco():
             autor TEXT NOT NULL,
             editora TEXT,
             ano_publicacao INTEGER,
-            isbn TEXT UNIQUE
+            isbn TEXT UNIQUE,
+            origem TEXT
         )
         ''')
 
