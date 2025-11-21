@@ -165,7 +165,7 @@ def Novo_livro():
     ctk.CTkLabel(frameDireita, text="Inserir novo livro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=15)
     ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
     
-    campos = [("Título *", 2), ("Autor *", 3), ("Editora *", 4), ("Ano *", 5), ("ISBN *", 6)]
+    campos = [("Título *", 2), ("Autor *", 3), ("Editora *", 4), ("Ano *", 5), ("Código *", 6)]
     entries = {}
 
     for texto, linha in campos:
@@ -174,7 +174,7 @@ def Novo_livro():
         entry.grid(row=linha, column=2, padx=10, pady=10, sticky="w")
         entries[texto] = entry
     
-    ETitulo = entries["Título *"]; EAutor = entries["Autor *"]; EEditora = entries["Editora *"]; EAno = entries["Ano *"]; EIsbn = entries["ISBN *"]
+    ETitulo = entries["Título *"]; EAutor = entries["Autor *"]; EEditora = entries["Editora *"]; EAno = entries["Ano *"]; EIsbn = entries["Código *"]
     
     ctk.CTkLabel(frameDireita, text="Origem *", font=('Verdana', 14), text_color=co0).grid(row=7, column=1, padx=10, pady=10, sticky="e")
     Eorigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo'], fg_color="white", text_color="black", state="readonly")
@@ -230,7 +230,7 @@ def ver_livros():
     ctk.CTkLabel(frameDireita, text="Todos os livros cadastrados", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, pady=10, sticky="ew")
     ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, sticky="ew", padx=10)
 
-    headers = ['id', 'titulo', 'autor', 'editora', 'ano', 'isbn', 'origem']
+    headers = ['id', 'titulo', 'autor', 'editora', 'ano', 'código', 'origem']
     widths = [30, 150, 120, 100, 50, 100, 100]
     tree = criar_tabela(headers, widths)
     dados = listar_livros()
@@ -422,13 +422,13 @@ def Alterar_livro():
 
     ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=3, column=0, columnspan=4, sticky="ew", padx=20, pady=10)
 
-    campos = [("Título *", 4), ("Autor *", 5), ("Editora", 6), ("Ano", 7), ("ISBN", 8)]
+    campos = [("Título *", 4), ("Autor *", 5), ("Editora", 6), ("Ano", 7), ("Código", 8)]
     entries = {}
     for txt, ln in campos:
         ctk.CTkLabel(frameDireita, text=txt, font=('Verdana', 14), text_color=co0).grid(row=ln, column=1, padx=10, sticky="e")
         e = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); e.grid(row=ln, column=2, padx=10, pady=5, sticky="w")
         entries[txt] = e
-    ETitulo=entries["Título *"]; EAutor=entries["Autor *"]; EEditora=entries["Editora"]; EAno=entries["Ano"]; EIsbn=entries["ISBN"]
+    ETitulo=entries["Título *"]; EAutor=entries["Autor *"]; EEditora=entries["Editora"]; EAno=entries["Ano"]; EIsbn=entries["Código"]
     
     ctk.CTkLabel(frameDireita, text="Origem *", font=('Verdana', 14), text_color=co0).grid(row=9, column=1, padx=10, sticky="e")
     EOrigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo'], fg_color="white", text_color="black")

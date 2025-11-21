@@ -39,7 +39,7 @@ def insert_loan(id_livro, id_usuario, data_emprestimo, data_devolucao=None):
         try:
             data_emp_clean = data_emprestimo.strip()
             data_emp_dt = datetime.strptime(data_emp_clean, "%d-%m-%Y")
-            data_prevista_dt = data_emp_dt + timedelta(days=30)
+            data_prevista_dt = data_emp_dt + timedelta(days=7)
             data_prevista_str = data_prevista_dt.strftime("%d-%m-%Y")
         except Exception as e:
             print(f"Não foi possível calcular data_prevista a partir de '{data_emprestimo}': {e}")
