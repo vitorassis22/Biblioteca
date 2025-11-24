@@ -1,268 +1,138 @@
 import sqlite3
 from datetime import datetime, timedelta
 
-# Conectar ao banco
 def connect():
     return sqlite3.connect('dados.db')
 
-# Inserir novo livro
-def insert_book(titulo, autor, editora, ano, isbn, origem, genero):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        "INSERT INTO livros (titulo, autor, editora, ano_publicacao, isbn, origem, genero) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (titulo, autor, editora, ano, isbn, origem, genero)
-    )
-    con.commit()
-    con.close()
-    print(f"Livro '{titulo}' inserido.")
+# --- GÊNEROS ---
+def insert_genero(nome):
+    with connect() as con: con.execute("INSERT INTO generos (nome) VALUES (?)", (nome,))
+def get_generos():
+    with connect() as con: return con.execute("SELECT * FROM generos").fetchall()
+def delete_genero(id):
+    with connect() as con: con.execute("DELETE FROM generos WHERE id=?", (id,))
+def get_generos_list(): 
+    with connect() as con: return [r[0] for r in con.execute("SELECT nome FROM generos").fetchall()]
 
-# Inserir novo usuário
-def insert_user(nome, turma, endereco, email, telefone):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        "INSERT INTO usuarios (nome, turma, endereco, email, telefone) VALUES (?, ?, ?, ?, ?)",
-        (nome, turma, endereco, email, telefone)
-    )
-    con.commit()
-    con.close()
-    print(f"Usuário '{nome}' inserido com sucesso.")
+# --- PRATELEIRAS ---
+def insert_prateleira(nome):
+    with connect() as con: con.execute("INSERT INTO prateleiras (nome) VALUES (?)", (nome,))
+def get_prateleiras():
+    with connect() as con: return con.execute("SELECT * FROM prateleiras").fetchall()
+def delete_prateleira(id):
+    with connect() as con: con.execute("DELETE FROM prateleiras WHERE id=?", (id,))
+def get_prateleiras_list():
+    with connect() as con: return [r[0] for r in con.execute("SELECT nome FROM prateleiras").fetchall()]
 
-# Inserir novo empréstimo
-def insert_loan(id_livro, id_usuario, data_emprestimo, data_devolucao=None):
-    con = connect()
-    cursor = con.cursor()
+# --- LIVROS ---
+def insert_book(titulo, autor, editora, ano, isbn, origem, genero, cidade, estado, prateleira, quantidade):
+    with connect() as con:
+        con.execute("""INSERT INTO livros (titulo, autor, editora, ano_publicacao, isbn, origem, genero, cidade, estado, prateleira, quantidade) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (titulo, autor, editora, ano, isbn, origem, genero, cidade, estado, prateleira, quantidade))
 
-    data_prevista_str = None
-    if isinstance(data_emprestimo, str):
-        try:
-            data_emp_clean = data_emprestimo.strip()
-            data_emp_dt = datetime.strptime(data_emp_clean, "%d-%m-%Y")
-            data_prevista_dt = data_emp_dt + timedelta(days=7)
-            data_prevista_str = data_prevista_dt.strftime("%d-%m-%Y")
-        except Exception as e:
-            print(f"Não foi possível calcular data_prevista a partir de '{data_emprestimo}': {e}")
+def update_book(id, titulo, autor, editora, ano, isbn, origem, genero, cidade, estado, prateleira, quantidade):
+    with connect() as con:
+        con.execute("""UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?, genero=?, cidade=?, estado=?, prateleira=?, quantidade=?
+                       WHERE id=?""",
+                    (titulo, autor, editora, ano, isbn, origem, genero, cidade, estado, prateleira, quantidade, id))
 
-    cursor.execute('''
-        INSERT INTO emprestimos (id_livro, id_usuario, data_emprestimo, data_devolucao, data_prevista)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (id_livro, id_usuario, data_emprestimo, data_devolucao, data_prevista_str))
+def delete_book(id):
+    with connect() as con: con.execute("DELETE FROM livros WHERE id=?", (id,))
 
-    con.commit()
-    con.close()
-    print(f"Empréstimo inserido com sucesso. Prevista: {data_prevista_str}")
-
-# Listar livros
-def listar_livros():
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT id, titulo, autor, editora, ano_publicacao, isbn, origem, genero FROM livros")
-    livros = cursor.fetchall()
-    con.close()
-    return livros
-
-# Listar usuários
-def listar_usuarios():
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT id, nome, turma, endereco, email, telefone FROM usuarios")
-    usuarios = cursor.fetchall()
-    con.close()
-    
-    print("\n=== USUÁRIOS CADASTRADOS (via print) ===")
-    if not usuarios:
-        print("Nenhum usuário cadastrado ainda.")
-    else:
-        for usuario in usuarios:
-            print(f"ID: {usuario[0]} | Nome: {usuario[1]}")
-
-    return usuarios # <--- CORRETO (Já tinha)
-
-#Listar emprestimos
-# --- view.py ---
-
-# Listar APENAS empréstimos PENDENTES (que não foram devolvidos)
-def listar_emprestimos():
-    con = connect()
-    cur = con.cursor()
-    cur.execute('''
-        SELECT emprestimos.id, livros.titulo, usuarios.nome,
-               emprestimos.data_emprestimo, emprestimos.data_prevista, emprestimos.data_devolucao
-        FROM emprestimos
-        INNER JOIN livros ON livros.id = emprestimos.id_livro
-        INNER JOIN usuarios ON usuarios.id = emprestimos.id_usuario
-        WHERE emprestimos.data_devolucao IS NULL OR emprestimos.data_devolucao = ""
-    ''')
-    rows = cur.fetchall()
-    con.close()
-    return rows
-
-# Atualizar data de devolucao
-def devolver_livro(id_emprestimo, data_devolucao):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        "UPDATE emprestimos SET data_devolucao = ? WHERE id = ?",
-        (data_devolucao, id_emprestimo))
-    
-    if cursor.rowcount == 0:
-         print(f"Nenhum empréstimo encontrado com ID {id_emprestimo}.")
-    else:
-         print(f"Empréstimo {id_emprestimo} atualizado com data de devolução {data_devolucao}.")
-
-    con.commit()
-    con.close()
-
-# --- NOVAS FUNÇÕES 'GET' PARA FORMULÁRIOS ---
-
-# Retorna livros no formato "ID: Titulo"
-def get_all_livros():
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT id, titulo FROM livros ORDER BY titulo")
-    livros = cursor.fetchall()
-    con.close()
-    return [f"{id}: {titulo}" for id, titulo in livros]
-
-# Retorna usuários no formato "ID: Nome"
-def get_all_usuarios():
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT id, nome FROM usuarios ORDER BY nome")
-    usuarios = cursor.fetchall()
-    con.close()
-    return [f"{id}: {nome}" for id, nome in usuarios]
-
-# Retorna empréstimos ativos (não devolvidos)
-def get_active_loans():
-    con = connect()
-    cur = con.cursor()
-    cur.execute('''
-        SELECT emprestimos.id, livros.titulo, usuarios.nome
-        FROM emprestimos
-        INNER JOIN livros ON livros.id = emprestimos.id_livro
-        INNER JOIN usuarios ON usuarios.id = emprestimos.id_usuario
-        WHERE emprestimos.data_devolucao IS NULL OR emprestimos.data_devolucao = ''
-        ORDER BY emprestimos.id
-    ''')
-    rows = cur.fetchall()
-    con.close()
-    return [f"{id}: {titulo} (com {usuario})" for id, titulo, usuario in rows]
-#----- novo ------------
-
-# --- NOVAS FUNÇÕES DE ALTERAÇÃO E EXCLUSÃO ---
-
-# --- FUNÇÕES 'GET' PARA PREENCHER FORMULÁRIOS ---
+# --- BUSCA INTELIGENTE DE LIVROS ---
+def get_books(search_term=""):
+    with connect() as con:
+        if search_term:
+            query = """
+                SELECT id, titulo, autor, editora, ano_publicacao, isbn, origem, genero, cidade, estado, prateleira, quantidade 
+                FROM livros 
+                WHERE titulo LIKE ? OR autor LIKE ? OR isbn LIKE ?
+            """
+            return con.execute(query, (f'%{search_term}%', f'%{search_term}%', f'%{search_term}%')).fetchall()
+        else:
+            return con.execute("""
+                SELECT id, titulo, autor, editora, ano_publicacao, isbn, origem, genero, cidade, estado, prateleira, quantidade 
+                FROM livros 
+                ORDER BY id DESC LIMIT 50
+            """).fetchall()
 
 def get_book_by_id(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT * FROM livros WHERE id = ?", (id,))
-    data = cursor.fetchone()
-    con.close()
-    return data
-# -- novo --
+    with connect() as con: return con.execute("SELECT * FROM livros WHERE id=?", (id,)).fetchone()
 
-# --- NOVAS FUNÇÕES DE ALTERAÇÃO E EXCLUSÃO ---
+# --- USUÁRIOS ---
+def insert_user(nome, turma, endereco, email, telefone):
+    with connect() as con:
+        con.execute("INSERT INTO usuarios (nome, turma, endereco, email, telefone) VALUES (?, ?, ?, ?, ?)",
+                    (nome, turma, endereco, email, telefone))
 
-# --- FUNÇÕES 'GET' PARA PREENCHER FORMULÁRIOS ---
+def update_user(id, nome, turma, endereco, email, telefone):
+    with connect() as con:
+        con.execute("UPDATE usuarios SET nome=?, turma=?, endereco=?, email=?, telefone=? WHERE id=?",
+                    (nome, turma, endereco, email, telefone, id))
+
+def delete_user(id):
+    with connect() as con: con.execute("DELETE FROM usuarios WHERE id=?", (id,))
+
+# --- BUSCA INTELIGENTE DE USUÁRIOS ---
+def get_users(search_term=""):
+    with connect() as con:
+        if search_term:
+            return con.execute("SELECT id, nome, turma, endereco, email, telefone FROM usuarios WHERE nome LIKE ? OR turma LIKE ?", 
+                               (f'%{search_term}%', f'%{search_term}%')).fetchall()
+        else:
+            return con.execute("SELECT id, nome, turma, endereco, email, telefone FROM usuarios ORDER BY id DESC").fetchall()
 
 def get_user_by_id(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (id,))
-    data = cursor.fetchone() # fetchone() pega apenas um resultado
-    con.close()
-    return data
+    with connect() as con: return con.execute("SELECT * FROM usuarios WHERE id=?", (id,)).fetchone()
 
-# --- FUNÇÕES 'UPDATE' (ALTERAR) ---
+# --- EMPRÉSTIMOS ---
+def insert_loan(id_livro, id_usuario, data_emp):
+    try:
+        dt = datetime.strptime(data_emp, "%d-%m-%Y")
+        prevista = (dt + timedelta(days=15)).strftime("%d-%m-%Y")
+    except: prevista = ""
+    with connect() as con:
+        con.execute("INSERT INTO emprestimos (id_livro, id_usuario, data_emprestimo, data_prevista, data_devolucao) VALUES (?, ?, ?, ?, ?)",
+                    (id_livro, id_usuario, data_emp, prevista, ""))
 
-def update_user(id, nome, turma, endereco, email, telefone):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        """UPDATE usuarios SET nome=?, turma=?, endereco=?, email=?, telefone=?
-           WHERE id = ?""",
-        (nome, turma, endereco, email, telefone, id)
-    )
-    con.commit()
-    con.close()
-    print(f"Usuário ID {id} atualizado.")
+def get_active_loans():
+    with connect() as con:
+        return con.execute("""
+            SELECT e.id, l.titulo, u.nome, e.data_emprestimo, e.data_prevista 
+            FROM emprestimos e
+            JOIN livros l ON l.id = e.id_livro
+            JOIN usuarios u ON u.id = e.id_usuario
+            WHERE e.data_devolucao IS NULL OR e.data_devolucao = ''
+        """).fetchall()
 
-def update_book(id, titulo, autor, editora, ano, isbn, origem, genero):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?, genero=?
-           WHERE id = ?""",
-        (titulo, autor, editora, ano, isbn, origem, genero, id)
-    )
-    con.commit()
-    con.close()
-    print(f"Livro ID {id} atualizado.")
+# --- BUSCA INTELIGENTE DE EMPRÉSTIMOS ---
+def get_loans(search_term=""):
+    with connect() as con:
+        base_query = '''
+            SELECT e.id, l.titulo, u.nome, e.data_emprestimo, e.data_prevista, 
+            CASE WHEN e.data_devolucao IS NULL OR e.data_devolucao = '' THEN 'Pendente' ELSE e.data_devolucao END
+            FROM emprestimos e
+            JOIN livros l ON l.id = e.id_livro
+            JOIN usuarios u ON u.id = e.id_usuario
+        '''
+        
+        if search_term:
+            query = f"{base_query} WHERE l.titulo LIKE ? OR u.nome LIKE ? ORDER BY e.id DESC"
+            return con.execute(query, (f'%{search_term}%', f'%{search_term}%')).fetchall()
+        else:
+            query = f"{base_query} ORDER BY e.id DESC LIMIT 50"
+            return con.execute(query).fetchall()
 
-# --- FUNÇÕES 'DELETE' (EXCLUIR) ---
+def return_loan(id, data_dev):
+    with connect() as con:
+        con.execute("UPDATE emprestimos SET data_devolucao=? WHERE id=?", (data_dev, id))
 
-def delete_user(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,))
-    con.commit()
-    con.close()
-    print(f"Usuário ID {id} deletado.")
-
-def delete_book(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("DELETE FROM livros WHERE id = ?", (id,))
-    con.commit()
-    con.close()
-    print(f"Livro ID {id} deletado.")
-    
-    #-- fim novo --
-
-# --- FUNÇÕES 'UPDATE' (ALTERAR) ---
-
-def update_user(id, nome, turma, endereco, email, telefone):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        """UPDATE usuarios SET nome=?, turma=?, endereco=?, email=?, telefone=?
-           WHERE id = ?""",
-        (nome, turma, endereco, email, telefone, id)
-    )
-    con.commit()
-    con.close()
-    print(f"Usuário ID {id} atualizado.")
-
-def update_book(id, titulo, autor, editora, ano, isbn, origem):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute(
-        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?
-           WHERE id = ?""",
-        (titulo, autor, editora, ano, isbn, origem, id)
-    )
-    con.commit()
-    con.close()
-    print(f"Livro ID {id} atualizado.")
-
-# --- FUNÇÕES 'DELETE' (EXCLUIR) ---
-
-def delete_user(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,))
-    con.commit()
-    con.close()
-    print(f"Usuário ID {id} deletado.")
-
-def delete_book(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("DELETE FROM livros WHERE id = ?", (id,))
-    con.commit()
-    con.close()
-    print(f"Livro ID {id} deletado.")
-# (O resto do seu código de teste __main__ pode ficar aqui)
+# Helpers para Combobox
+def get_books_list():
+    with connect() as con: return [f"{r[0]}: {r[1]}" for r in con.execute("SELECT id, titulo FROM livros ORDER BY titulo").fetchall()]
+def get_users_list():
+    with connect() as con: return [f"{r[0]}: {r[1]}" for r in con.execute("SELECT id, nome FROM usuarios ORDER BY nome").fetchall()]
+def get_loans_list():
+    loans = get_active_loans()
+    return [f"{r[0]}: {r[1]} - {r[2]}" for r in loans]
