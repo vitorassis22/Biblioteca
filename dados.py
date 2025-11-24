@@ -1,12 +1,10 @@
 import sqlite3
 
-# Função para criar o banco e as tabelas
 def inicializar_banco():
-    # Conecta ao banco (ou cria, se não existir), com timeout para evitar erro de "database is locked"
     with sqlite3.connect('dados.db', timeout=10) as con:
         cursor = con.cursor()
 
-        # Criar tabela de livros
+        # Tabela de livros (Atualizada com genero)
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS livros (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,11 +13,11 @@ def inicializar_banco():
             editora TEXT,
             ano_publicacao INTEGER,
             isbn TEXT UNIQUE,
-            origem TEXT
+            origem TEXT,
+            genero TEXT
         )
         ''')
 
-        # Criar tabela de usuários
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +29,6 @@ def inicializar_banco():
         )
         ''')
 
-        # Criar tabela de empréstimos
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS emprestimos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,10 +41,8 @@ def inicializar_banco():
             FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
         )
         ''')
-
         con.commit()
-        print("Banco e tabelas criados com sucesso.")
+        print("Banco atualizado com campo Gênero.")
 
-# Executa a função
 if __name__ == '__main__':
     inicializar_banco()

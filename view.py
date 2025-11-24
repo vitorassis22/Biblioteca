@@ -6,16 +6,16 @@ def connect():
     return sqlite3.connect('dados.db')
 
 # Inserir novo livro
-def insert_book(titulo, autor, editora, ano, isbn, origem):
+def insert_book(titulo, autor, editora, ano, isbn, origem, genero):
     con = connect()
     cursor = con.cursor()
     cursor.execute(
-        "INSERT INTO livros (titulo, autor, editora, ano_publicacao, isbn, origem) VALUES (?, ?, ?, ?, ?, ?)",
-        (titulo, autor, editora, ano, isbn, origem)
+        "INSERT INTO livros (titulo, autor, editora, ano_publicacao, isbn, origem, genero) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (titulo, autor, editora, ano, isbn, origem, genero)
     )
     con.commit()
     con.close()
-    print(f"Livro '{titulo}' inserido com sucesso.")
+    print(f"Livro '{titulo}' inserido.")
 
 # Inserir novo usuário
 def insert_user(nome, turma, endereco, email, telefone):
@@ -57,18 +57,10 @@ def insert_loan(id_livro, id_usuario, data_emprestimo, data_devolucao=None):
 def listar_livros():
     con = connect()
     cursor = con.cursor()
-    cursor.execute("SELECT id, titulo, autor, editora, ano_publicacao, isbn, origem FROM livros")
+    cursor.execute("SELECT id, titulo, autor, editora, ano_publicacao, isbn, origem, genero FROM livros")
     livros = cursor.fetchall()
     con.close()
-    
-    print("\n=== LIVROS CADASTRADOS (via print) ===")
-    if not livros:
-        print("Nenhum livro cadastrado ainda.")
-    else:
-        for livro in livros:
-            print(f"ID: {livro[0]} | Título: {livro[1]}")
-            
-    return livros # <--- CORRIGIDO: Adicionado return
+    return livros
 
 # Listar usuários
 def listar_usuarios():
@@ -163,14 +155,6 @@ def get_active_loans():
 
 # --- FUNÇÕES 'GET' PARA PREENCHER FORMULÁRIOS ---
 
-def get_user_by_id(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (id,))
-    data = cursor.fetchone() # fetchone() pega apenas um resultado
-    con.close()
-    return data
-
 def get_book_by_id(id):
     con = connect()
     cursor = con.cursor()
@@ -178,7 +162,6 @@ def get_book_by_id(id):
     data = cursor.fetchone()
     con.close()
     return data
-
 # -- novo --
 
 # --- NOVAS FUNÇÕES DE ALTERAÇÃO E EXCLUSÃO ---
@@ -190,14 +173,6 @@ def get_user_by_id(id):
     cursor = con.cursor()
     cursor.execute("SELECT * FROM usuarios WHERE id = ?", (id,))
     data = cursor.fetchone() # fetchone() pega apenas um resultado
-    con.close()
-    return data
-
-def get_book_by_id(id):
-    con = connect()
-    cursor = con.cursor()
-    cursor.execute("SELECT * FROM livros WHERE id = ?", (id,))
-    data = cursor.fetchone()
     con.close()
     return data
 
@@ -215,13 +190,13 @@ def update_user(id, nome, turma, endereco, email, telefone):
     con.close()
     print(f"Usuário ID {id} atualizado.")
 
-def update_book(id, titulo, autor, editora, ano, isbn, origem):
+def update_book(id, titulo, autor, editora, ano, isbn, origem, genero):
     con = connect()
     cursor = con.cursor()
     cursor.execute(
-        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?
+        """UPDATE livros SET titulo=?, autor=?, editora=?, ano_publicacao=?, isbn=?, origem=?, genero=?
            WHERE id = ?""",
-        (titulo, autor, editora, ano, isbn, origem, id)
+        (titulo, autor, editora, ano, isbn, origem, genero, id)
     )
     con.commit()
     con.close()

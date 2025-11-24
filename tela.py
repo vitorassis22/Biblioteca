@@ -149,23 +149,31 @@ def Novo_livro():
     
     def add_livro():
         titulo = ETitulo.get(); autor = EAutor.get(); editora = EEditora.get()
-        ano = EAno.get(); isbn = EIsbn.get(); origem = Eorigem.get()
-        lista_obrigatoria = [titulo, autor, editora, ano, isbn, origem]
+        ano = EAno.get(); isbn = EIsbn.get(); origem = Eorigem.get(); genero = EGenero.get()
+
+        lista_obrigatoria = [titulo, autor, editora, ano, isbn, origem, genero]
         for i in lista_obrigatoria:
-            if i=='' or i=='Selecione a origem':
+            if i=='' or i=='Selecione a origem' or i=='Selecione o gênero':
                 messagebox.showerror('Erro', 'Preencha todos os campos obrigatórios (*)')
                 return
-        insert_book(titulo, autor, editora, ano, isbn, origem) 
+        
+        # Passando genero para o view
+        insert_book(titulo, autor, editora, ano, isbn, origem, genero) 
         messagebox.showinfo('Sucesso', 'Livro cadastrado com sucesso!')
-        ETitulo.delete(0,'end'); EAutor.delete(0,'end'); EEditora.delete(0,'end'); EAno.delete(0,'end'); EIsbn.delete(0,'end')
+        
+        # Limpar campos
+        ETitulo.delete(0,'end'); EAutor.delete(0,'end'); EEditora.delete(0,'end'); 
+        EAno.delete(0,'end'); EIsbn.delete(0,'end')
         Eorigem.set('Selecione a origem')
+        EGenero.set('Selecione o gênero')
 
     frameDireita.grid_columnconfigure(0, weight=1); frameDireita.grid_columnconfigure(3, weight=1)
 
     ctk.CTkLabel(frameDireita, text="Inserir novo livro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=15)
     ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, columnspan=4, sticky="ew", padx=20)
     
-    campos = [("Título *", 2), ("Autor *", 3), ("Editora *", 4), ("Ano *", 5), ("Código *", 6)]
+    # Campos de Texto
+    campos = [("Título *", 2), ("Autor *", 3), ("Editora *", 4), ("Ano *", 5), ("ISBN *", 6)]
     entries = {}
 
     for texto, linha in campos:
@@ -174,17 +182,25 @@ def Novo_livro():
         entry.grid(row=linha, column=2, padx=10, pady=10, sticky="w")
         entries[texto] = entry
     
-    ETitulo = entries["Título *"]; EAutor = entries["Autor *"]; EEditora = entries["Editora *"]; EAno = entries["Ano *"]; EIsbn = entries["Código *"]
+    ETitulo = entries["Título *"]; EAutor = entries["Autor *"]; EEditora = entries["Editora *"]; EAno = entries["Ano *"]; EIsbn = entries["ISBN *"]
     
+    # Campo Origem
     ctk.CTkLabel(frameDireita, text="Origem *", font=('Verdana', 14), text_color=co0).grid(row=7, column=1, padx=10, pady=10, sticky="e")
-    Eorigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo'], fg_color="white", text_color="black", state="readonly")
+    Eorigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo', 'Compra'], fg_color="white", text_color="black")
     Eorigem.grid(row=7, column=2, padx=10, pady=10, sticky="w"); Eorigem.set('Selecione a origem') 
     
-    img_save = get_ctk_image("save.png")
-    b_salvar = ctk.CTkButton(frameDireita, command=add_livro, image=img_save, text='SALVAR', font=('Ivy', 14), 
-                             fg_color=co1, text_color=co0, hover_color=co1, border_width=1, border_color=co0)
-    b_salvar.grid(row=8, column=2, sticky="w", padx=10, pady=20)
+    # Campo Gênero (NOVO)
+    ctk.CTkLabel(frameDireita, text="Gênero *", font=('Verdana', 14), text_color=co0).grid(row=8, column=1, padx=10, pady=10, sticky="e")
+    lista_generos = ['Ficção', 'Romance', 'Técnico', 'História', 'Infantil', 'Biografia', 'Terror', 'Fantasia']
+    EGenero = ctk.CTkOptionMenu(frameDireita, width=250, values=lista_generos, fg_color="white", text_color="black")
+    EGenero.grid(row=8, column=2, padx=10, pady=10, sticky="w"); EGenero.set('Selecione o gênero') 
 
+    # Botão
+    img_save = get_ctk_image("save.png")
+    b_salvar = ctk.CTkButton(frameDireita, command=add_livro, image=img_save, text='SALVAR', font=('Ivy', 14, 'bold'), 
+                             fg_color=co1, text_color=co0, hover_color=co7, border_width=1, border_color=co0)
+    b_salvar.grid(row=9, column=2, sticky="w", padx=10, pady=20)
+    
 # --- Tabela ---
 def criar_tabela(headers, columns_width):
     style = ttk.Style()
@@ -230,8 +246,9 @@ def ver_livros():
     ctk.CTkLabel(frameDireita, text="Todos os livros cadastrados", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, pady=10, sticky="ew")
     ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=1, column=0, sticky="ew", padx=10)
 
-    headers = ['id', 'titulo', 'autor', 'editora', 'ano', 'código', 'origem']
-    widths = [30, 150, 120, 100, 50, 100, 100]
+    # Adicionado Gênero
+    headers = ['id', 'titulo', 'autor', 'editora', 'ano', 'isbn', 'origem', 'gênero']
+    widths = [30, 150, 100, 100, 50, 80, 80, 80] # Ajuste as larguras conforme necessário
     tree = criar_tabela(headers, widths)
     dados = listar_livros()
     if dados:
@@ -388,19 +405,26 @@ def Alterar_livro():
             livro = ELivro.get()
             if not livro or livro == 'Selecione o livro': return
             dados = get_book_by_id(int(livro.split(':')[0])) 
+            
             ETitulo.delete(0,'end'); ETitulo.insert(0, dados[1])
             EAutor.delete(0,'end'); EAutor.insert(0, dados[2])
             EEditora.delete(0,'end'); EEditora.insert(0, dados[3])
             EAno.delete(0,'end'); EAno.insert(0, str(dados[4]))
             EIsbn.delete(0,'end'); EIsbn.insert(0, dados[5])
+            
+            # Tratamento para campos novos caso o banco tenha nulos
             val_origem = dados[6] if len(dados) > 6 else "Doação"
+            val_genero = dados[7] if len(dados) > 7 else "Ficção"
+            
             EOrigem.set(val_origem)
+            EGenero.set(val_genero)
             b_salvar.configure(state='normal')
         except: pass
 
     def salvar():
         try:
-            update_book(int(ELivro.get().split(':')[0]), ETitulo.get(), EAutor.get(), EEditora.get(), EAno.get(), EIsbn.get(), EOrigem.get())
+            # Passando genero para o update
+            update_book(int(ELivro.get().split(':')[0]), ETitulo.get(), EAutor.get(), EEditora.get(), EAno.get(), EIsbn.get(), EOrigem.get(), EGenero.get())
             messagebox.showinfo('Sucesso', 'Atualizado!')
             control('Alterar livro') 
         except: messagebox.showerror('Erro', 'Erro ao salvar')
@@ -409,33 +433,39 @@ def Alterar_livro():
 
     ctk.CTkLabel(frameDireita, text="Alterar Livro", font=('Verdana', 20, 'bold'), text_color=co0).grid(row=0, column=0, columnspan=4, pady=10)
     
+    # Seletor
     ctk.CTkLabel(frameDireita, text="Selecione:", font=('Verdana', 12), text_color=co0).grid(row=1, column=1, padx=10, sticky="e")
-    
-    ELivro = ctk.CTkOptionMenu(frameDireita, width=200, values=get_all_livros(), 
-                               fg_color=co1, text_color=co0)
+    ELivro = ctk.CTkOptionMenu(frameDireita, width=200, values=get_all_livros(), fg_color=co1, text_color=co0, button_color=co8, button_hover_color=co7)
     ELivro.grid(row=1, column=2, padx=10, sticky="w"); ELivro.set('Selecione o livro')
     
-    # --- BOTÃO CARREGAR COM BORDA ---
     ctk.CTkButton(frameDireita, command=carregar, text='Carregar', width=80, 
-                  fg_color=co1, text_color=co0, hover_color=co1,
+                  fg_color=co1, text_color=co0, hover_color=co7,
                   border_width=1, border_color=co0).grid(row=2, column=2, padx=10, pady=5, sticky="w")
 
     ctk.CTkFrame(frameDireita, height=2, fg_color=co3).grid(row=3, column=0, columnspan=4, sticky="ew", padx=20, pady=10)
 
-    campos = [("Título *", 4), ("Autor *", 5), ("Editora", 6), ("Ano", 7), ("Código", 8)]
+    campos = [("Título *", 4), ("Autor *", 5), ("Editora", 6), ("Ano", 7), ("ISBN", 8)]
     entries = {}
     for txt, ln in campos:
         ctk.CTkLabel(frameDireita, text=txt, font=('Verdana', 14), text_color=co0).grid(row=ln, column=1, padx=10, sticky="e")
         e = ctk.CTkEntry(frameDireita, width=250, fg_color="white", text_color="black"); e.grid(row=ln, column=2, padx=10, pady=5, sticky="w")
         entries[txt] = e
-    ETitulo=entries["Título *"]; EAutor=entries["Autor *"]; EEditora=entries["Editora"]; EAno=entries["Ano"]; EIsbn=entries["Código"]
+    ETitulo=entries["Título *"]; EAutor=entries["Autor *"]; EEditora=entries["Editora"]; EAno=entries["Ano"]; EIsbn=entries["ISBN"]
     
+    # Origem
     ctk.CTkLabel(frameDireita, text="Origem *", font=('Verdana', 14), text_color=co0).grid(row=9, column=1, padx=10, sticky="e")
-    EOrigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo'], fg_color="white", text_color="black")
+    EOrigem = ctk.CTkOptionMenu(frameDireita, width=250, values=['Doação', 'Governo', 'Compra'], fg_color="white", text_color="black")
     EOrigem.grid(row=9, column=2, padx=10, pady=5, sticky="w"); EOrigem.set('Selecione a origem')
 
-    b_salvar = ctk.CTkButton(frameDireita, command=salvar, text='SALVAR ALTERAÇÕES', fg_color=co1, text_color=co0, hover_color=co1)
-    b_salvar.grid(row=10, column=2, sticky="w", padx=10, pady=20)
+    # Gênero (NOVO)
+    ctk.CTkLabel(frameDireita, text="Gênero *", font=('Verdana', 14), text_color=co0).grid(row=10, column=1, padx=10, sticky="e")
+    lista_generos = ['Ficção', 'Romance', 'Técnico', 'História', 'Infantil', 'Biografia', 'Terror', 'Fantasia']
+    EGenero = ctk.CTkOptionMenu(frameDireita, width=250, values=lista_generos, fg_color="white", text_color="black")
+    EGenero.grid(row=10, column=2, padx=10, pady=5, sticky="w"); EGenero.set('Selecione o gênero')
+
+    b_salvar = ctk.CTkButton(frameDireita, command=salvar, text='SALVAR ALTERAÇÕES', fg_color=co9, text_color=co0, state="disabled")
+    b_salvar.grid(row=11, column=2, sticky="w", padx=10, pady=20)
+    
 # --- Excluir Livro ---
 def Excluir_livro():
     limpar_frame_direita()
