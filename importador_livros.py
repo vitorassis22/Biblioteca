@@ -3,7 +3,7 @@ import os
 import uuid
 
 # --- CONFIGURAÇÃO ---
-ARQUIVO_ENTRADA = "dados.csv"
+ARQUIVO_ENTRADA = "dadosAtt.csv"
 ARQUIVO_SAIDA = "insert_completo.sql"
 
 def escapar_sql(texto):

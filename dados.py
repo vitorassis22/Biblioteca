@@ -4,19 +4,17 @@ def inicializar_banco():
     with sqlite3.connect('dados.db') as con:
         cursor = con.cursor()
 
-        # Tabelas auxiliares
         cursor.execute('CREATE TABLE IF NOT EXISTS generos (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT UNIQUE)')
         cursor.execute('CREATE TABLE IF NOT EXISTS prateleiras (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT UNIQUE)')
 
-        # --- Tabela LIVROS (Sem restrições NOT NULL agora) ---
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS livros (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            titulo TEXT,          -- Antes era NOT NULL
-            autor TEXT,           -- Antes era NOT NULL
+            titulo TEXT,
+            autor TEXT,
             editora TEXT,
             ano_publicacao INTEGER,
-            isbn TEXT,            -- Removi o UNIQUE para permitir vazios repetidos se necessário, ou mantenha se quiser controlar duplicidade
+            isbn TEXT,
             origem TEXT,
             genero TEXT,
             cidade TEXT,
@@ -56,7 +54,7 @@ def inicializar_banco():
             cursor.execute("INSERT INTO prateleiras (nome) VALUES ('A1'), ('B1'), ('C1')")
         except: pass
 
-        print("Banco de dados atualizado (Campos opcionais)!")
+        print("Banco de dados atualizado!")
 
 if __name__ == '__main__':
     inicializar_banco()
