@@ -25,7 +25,7 @@ def gerar_arquivo_sql():
 
     print("Lendo arquivo CSV...")
     
-    # --- CORREÇÃO AQUI: Mudamos para 'utf-8' ---
+    # Tenta ler o arquivo
     try:
         # Tenta ler com UTF-8 primeiro (Corrige os acentos)
         df = pd.read_csv(ARQUIVO_ENTRADA, sep=';', encoding='utf-8', on_bad_lines='skip', dtype=str)
@@ -56,18 +56,22 @@ def gerar_arquivo_sql():
         elif "AUTOR" in col: col_map['AUTOR'] = col
         elif "EDITORA" in col: col_map['EDITORA'] = col
         elif "ANO" in col or "EDIÇÃO" in col: col_map['ANO'] = col
-        elif "ISBN" in col or "CÓDIGO" in col: col_map['ISBN'] = col
-        elif "GENERO" in col or "ASSUNTO" in col: col_map['GENERO'] = col
+        elif "ISBN" in col or "CÓDIGO" in col or "CODIGO" in col: col_map['ISBN'] = col 
+        elif "GENERO" in col or "GÊNERO" in col or "ASSUNTO" in col: col_map['GENERO'] = col
         elif "QTD" in col or "QUANTIDADE" in col: col_map['QTD'] = col
 
     if 'TITULO' not in col_map:
         print("❌ Erro: Coluna de Título não encontrada.")
         print(f"Colunas lidas: {df.columns.tolist()}")
         return
+    
+    if 'ISBN' in col_map:
+        print(f"✅ Coluna de ISBN/Código encontrada: {col_map['ISBN']}")
+    else:
+        print("⚠️ Aviso: Coluna de ISBN/Código NÃO encontrada. Serão gerados códigos aleatórios.")
 
     print(f"Gerando SQL para {len(df)} livros...")
 
-    # Abre o arquivo de saída também forçando UTF-8 para garantir
     with open(ARQUIVO_SAIDA, "w", encoding="utf-8") as f:
         f.write("-- Script gerado automaticamente\n")
         f.write("BEGIN TRANSACTION;\n")
@@ -81,9 +85,15 @@ def gerar_arquivo_sql():
             editora = escapar_sql(row.get(col_map.get('EDITORA'), ''))
             ano = tratar_numero(row.get(col_map.get('ANO'), 0))
             
-            isbn = escapar_sql(row.get(col_map.get('ISBN'), ''))
-            if len(isbn) < 3: isbn = f"GEN_{uuid.uuid4().hex[:8]}"
-            else: isbn = isbn.replace('.0', '')
+            # --- LÓGICA DO ISBN ---
+            isbn_raw = row.get(col_map.get('ISBN'), '')
+            isbn = escapar_sql(isbn_raw)
+            
+            # Só gera código novo se o campo estiver realmente vazio ou muito curto
+            if len(isbn) < 1: 
+                isbn = f"GEN_{uuid.uuid4().hex[:8]}"
+            else:
+                isbn = isbn.replace('.0', '') # Remove decimal se houver
 
             genero = escapar_sql(row.get(col_map.get('GENERO'), 'Geral'))
             qtd = tratar_numero(row.get(col_map.get('QTD'), 1))
